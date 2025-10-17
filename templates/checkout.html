@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Validation de Commande - La Ferme Ousfa{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Validation de Commande</h1>
+
+    
+
+    
+
+    {% if cart_items %}
+        <div class="card mb-4">
+            <div class="card-header">
+                Récapitulatif de votre commande
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for item in cart_items %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <img src="{{ url_for('static', filename='images/' + item.product.image_file) }}" alt="{{ item.product.name }}" style="width: 40px; height: 40px; object-fit: cover; margin-right: 10px;">
+                                {{ item.product.name }} x {{ item.quantity }}
+                            </div>
+                            <span>{{ "{:,.2f}".format(item.item_total) }} FCFA</span>
+                        </li>
+                    {% endfor %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center active">
+                        <strong>Total à payer :</strong>
+                        <strong>{{ "{:,.2f}".format(total_order_price) }} FCFA</strong>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <form action="{{ url_for('cart.checkout') }}" method="POST">
+            {{ checkout_form.hidden_tag() }}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Mode de Paiement</h5>
+                    <div class="mb-3">
+                        {% for subfield in checkout_form.payment_method %}
+                            <div class="form-check">
+                                {{ subfield(class="form-check-input", id=subfield.id) }}
+                                {{ subfield.label(class="form-check-label", for=subfield.id) }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div id="stripe-warning" class="alert alert-warning" style="display: none;">
+                        <strong>Attention :</strong> Le paiement par carte nécessite un montant minimum de 330 FCFA.
+                    </div>
+                    <div id="coming-soon-message" class="alert alert-info" style="display: none;">
+                        <!-- Message for Orange Money/Wave Money will be inserted here by JavaScript -->
+                    </div>
+                    {% if checkout_form.payment_method.errors %}
+                        <div class="alert alert-danger">
+                            {% for error in checkout_form.payment_method.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {{ checkout_form.submit(class="btn btn-success btn-lg") }}
+                    <a href="{{ url_for('cart.cart_view') }}" class="btn btn-secondary btn-lg">Retour au panier</a>
+                </div>
+            </div>
+        </form>
+
+    {% else %}
+        <div class="alert alert-warning" role="alert">
+            Votre panier est vide. Impossible de passer commande.
+            <a href="{{ url_for('products.produits') }}" class="alert-link">Retourner aux produits</a>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+            const stripeWarning = document.getElementById('stripe-warning');
+            const totalOrderPrice = {{ total_order_price|tojson }};
+            const minStripeAmount = 330;
+
+            function toggleStripeWarning() {
+                const selectedRadio = document.querySelector('input[name="payment_method"]:checked');
+                const comingSoonMessage = document.getElementById('coming-soon-message');
+                if (selectedRadio) {
+                    const selectedPayment = selectedRadio.value;
+                    if (selectedPayment === 'stripe' && totalOrderPrice < minStripeAmount) {
+                        stripeWarning.style.display = 'block';
+                        comingSoonMessage.style.display = 'none';
+                    } else if (selectedPayment === 'orange_money' || selectedPayment === 'wave_money') {
+                        stripeWarning.style.display = 'none';
+                        comingSoonMessage.innerHTML = `<strong>${selectedRadio.labels[0].textContent} :</strong> Ce mode de paiement sera bientôt disponible. Nous travaillons à l'intégration de l'API.`;
+                        comingSoonMessage.style.display = 'block';
+                    }
+                    else {
+                        stripeWarning.style.display = 'none';
+                        comingSoonMessage.style.display = 'none';
+                    }
+                }
+            }
+
+            paymentRadios.forEach(radio => {
+                radio.addEventListener('change', toggleStripeWarning);
+            });
+
+            // Initial check in case a payment method is pre-selected
+            toggleStripeWarning();
+        });
+    </script>
+{% endblock %}

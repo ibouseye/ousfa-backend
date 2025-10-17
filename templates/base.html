@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- 
+        Intégration du CSS de Bootstrap via un CDN.
+        La feuille de style (stylesheet) définit l'apparence de tous les composants Bootstrap.
+        On la place dans le <head> pour qu'elle soit chargée avant que le contenu ne s'affiche.
+    -->
+    {% assets "css_all" %}
+        <link rel="stylesheet" href="{{ ASSET_URL }}">
+    {% endassets %}
+
+    <!-- Font Awesome pour les icônes -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <!-- On peut ajouter notre propre fichier CSS ici plus tard si besoin -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.1/css/lightgallery.min.css">
+    
+    <!-- Le titre de la page sera dynamique. On définit un "block" que les pages enfants pourront surcharger. -->
+    <title>{% block title %}La Ferme Ousfa{% endblock %}</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.png') }}">
+    <style>
+        .navbar-glass {
+            background-color: rgba(0, 0, 0, 0.7) !important; /* Fond noir semi-transparent */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); /* Pour la compatibilité avec Safari */
+        }
+        /* Styles pour les confettis */
+        .confetti-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none; /* Permet de cliquer à travers le conteneur de confettis */
+            z-index: 9999; /* Assure que les confettis sont au-dessus de tout */
+        }
+
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00; /* Couleur par défaut, sera surchargée par JS */
+            animation: fall linear forwards;
+            opacity: 0;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100px) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+        .milestone-modal .modal-content {
+            background-color: #FFFACD; /* Lemon Chiffon - une couleur gaie */
+        }
+    </style>
+
+    <!-- Styles pour les icônes colorées du menu -->
+    <style>
+        /* Cible toutes les icônes Font Awesome (fas) dans les liens de navigation */
+        .navbar-nav .nav-link .fas,
+        .list-group .list-group-item-action .fas {
+            color: #FFFFFF; /* Blanc pour un contraste maximal */
+            transition: color 0.2s ease-in-out; /* Une petite transition pour un effet doux */
+            width: 20px; /* Assure un alignement parfait des textes */
+            text-align: center;
+        }
+
+        /* Cible l'icône d'un lien survolé ou actif */
+        .navbar-nav .nav-link:hover .fas,
+        .navbar-nav .nav-link.active .fas,
+        .list-group .list-group-item-action:hover .fas,
+        .list-group .list-group-item-action.active .fas {
+            color: #FDEF42; /* Le jaune de votre logo */
+        }
+
+        /* On personnalise le menu déroulant pour qu'il soit sombre */
+        .dropdown-menu {
+            background-color: #343a40; /* Fond sombre comme la navbar */
+            border: 1px solid rgba(255, 255, 255, 0.15); /* Bordure discrète */
+        }
+
+        /* On s'assure que le texte et les icônes sont blancs par défaut */
+        .dropdown-item {
+            color: white;
+        }
+        .dropdown-item .fas {
+            color: white;
+        }
+
+        /* Au survol, on change la couleur de fond et SEULEMENT la couleur de l'icône */
+        .dropdown-item:hover {
+            background-color: #495057;
+        }
+        .dropdown-item:hover .fas {
+            color: #FDEF42; /* L'icône passe en jaune */
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+</head>
+<body class="bg-light">
+
+    <!-- Barre de navigation (Navbar) de Bootstrap -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top navbar-glass">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="{{ url_for('main.index') }}">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo La Ferme Ousfa" height="60" class="me-2 brand-logo-img">
+                <span>
+                    <span class="brand-green">La</span>
+                    <span class="brand-yellow">Ferme</span>
+                    <span class="brand-red">
+                        <span class="brand-star-container">
+                            O<span class="brand-star">★</span>
+                        </span>usFa
+                    </span>
+                </span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {# Liens communs à tous les visiteurs #}
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'main.index' %}active{% endif %}" href="{{ url_for('main.index') }}"><i class="fas fa-home me-2"></i>Accueil</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.endpoint == 'products.produits' %}active{% endif %}" href="{{ url_for('products.produits') }}"><i class="fas fa-shopping-basket me-2"></i>Nos Produits</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if request.endpoint in ['main.realisations', 'main.about', 'main.contact'] %}active{% endif %}" href="#" id="navbarDropdownDiscover" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-info-circle me-2"></i> Découvrir
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownDiscover">
+                            <li><a class="dropdown-item {% if request.endpoint == 'main.realisations' %}active{% endif %}" href="{{ url_for('main.realisations') }}"><i class="fas fa-images me-2"></i>Nos Réalisations</a></li>
+                            <li><a class="dropdown-item {% if request.endpoint == 'main.dynamic_page' and request.view_args.page_name == 'about_us' %}active{% endif %}" href="{{ url_for('main.dynamic_page', page_name='about_us') }}"><i class="fas fa-users me-2"></i>Qui sommes-nous ?</a></li>
+                            <li><a class="dropdown-item {% if request.endpoint == 'main.contact' %}active{% endif %}" href="{{ url_for('main.contact') }}"><i class="fas fa-envelope me-2"></i>Contact</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.dynamic_page', page_name='faq') }}"><i class="fas fa-question-circle me-2"></i>FAQ</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.dynamic_page', page_name='testimonials') }}"><i class="fas fa-comments me-2"></i>Témoignages</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.dynamic_page', page_name='partners') }}"><i class="fas fa-handshake me-2"></i>Partenaires</a></li>
+                        </ul>
+                    </li>
+
+                    {% if current_user.is_authenticated %}
+                        {# --- MENU POUR UTILISATEURS CONNECTÉS --- #}
+
+                        {% if isinstance(current_user, StaffUser) %}
+                            {# Lien principal pour le personnel #}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'admin.admin_dashboard' %}active{% endif %}" href="{{ url_for('admin.admin_dashboard') }}"><i class="fas fa-tachometer-alt me-2"></i>Tableau de bord</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'cart.cart_view' %}active{% endif %}" href="{{ url_for('cart.cart_view') }}"><i class="fas fa-shopping-cart me-2"></i>Panier</a>
+                            </li>
+                        {% else %}
+                            {# Lien principal pour les clients #}
+                            <li class="nav-item">
+                                <a class="nav-link {% if request.endpoint == 'cart.cart_view' %}active{% endif %}" href="{{ url_for('cart.cart_view') }}"><i class="fas fa-shopping-cart me-2"></i>Panier</a>
+                            </li>
+                        {% endif %}
+
+                        {# Menu déroulant pour tous les utilisateurs connectés #}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarUserDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {% if isinstance(current_user, StaffUser) %}
+                                    <i class="fas fa-user-shield me-2"></i>
+                                {% else %}
+                                    <i class="fas fa-user-circle me-2"></i>
+                                {% endif %}
+                                Bonjour, {{ current_user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarUserDropdown">
+                                {% if isinstance(current_user, StaffUser) %}
+                                    {# Actions pour le personnel #}
+                                    <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}"><i class="fas fa-key me-2"></i>Changer Mot de Passe</a></li>
+                                {% else %}
+                                    {# Actions pour les clients #}
+                                    <li><a class="dropdown-item" href="{{ url_for('main.profile') }}"><i class="fas fa-user-circle me-2"></i>Mon Profil</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('main.my_orders') }}"><i class="fas fa-receipt me-2"></i>Mes Commandes</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('wishlist.view_wishlist') }}"><i class="fas fa-heart me-2"></i>Ma Liste de Souhaits</a></li>
+                                    <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}"><i class="fas fa-key me-2"></i>Changer Mot de Passe</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2"></i>Déconnexion</a></li>
+                            </ul>
+                        </li>
+
+                    {% else %}
+                        {# --- MENU POUR UTILISATEURS NON CONNECTÉS (ANONYMES) --- #}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'cart.cart_view' %}active{% endif %}" href="{{ url_for('cart.cart_view') }}"><i class="fas fa-shopping-cart me-2"></i>Panier</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'auth.login' %}active{% endif %}" href="{{ url_for('auth.login') }}"><i class="fas fa-sign-in-alt me-2"></i>Connexion</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.endpoint == 'auth.register' %}active{% endif %}" href="{{ url_for('auth.register') }}"><i class="fas fa-user-plus me-2"></i>S'enregistrer</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    {# Section pour l'affichage des bannières 'top' #}
+    {% if active_banners %}
+        {% for banner in active_banners %}
+            {% if banner.position == 'top' %}
+                <div class="top-banner text-center py-2" style="background-color: #FDEF42; color: #333; font-weight: bold; z-index: 1030;">
+                    {% if banner.image_file %}
+                        <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" alt="{{ banner.title }}" style="max-height: 30px; margin-right: 10px; vertical-align: middle;">
+                    {% endif %}
+                    <span>{{ banner.title }} - {{ banner.message }}</span>
+                    {% if banner.link_url %}
+                        <a href="{{ banner.link_url }}" class="btn btn-sm btn-dark ms-3">En savoir plus</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <main class="container mt-4 p-4 bg-white rounded-3 shadow-sm">
+        {# Message flash pour les retours utilisateur (succès/erreur) #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    {% if category == 'milestone-win' %}
+                        <!-- Modale de Félicitations -->
+                        <div class="modal fade milestone-modal" id="milestoneModal" tabindex="-1" aria-labelledby="milestoneModalLabel" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content">
+                                    <div class="confetti-container"></div>
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="milestoneModalLabel">🎉 Félicitations ! 🎉</h5>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>{{ message }}</p>
+                                        <p>Nous sommes ravis de célébrer avec vous !</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-lg btn-light" data-bs-dismiss="modal">Génial !</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- 
+            C'est la partie la plus importante du template de base.
+            Ce bloc "content" sera remplacé par le contenu spécifique de chaque page
+            qui hérite de ce template.
+        -->
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Pied de page (Footer) -->
+    <footer class="bg-dark text-white pt-5 pb-4 mt-5">
+        <div class="container text-center text-md-start">
+            <div class="row text-center text-md-start">
+
+                <div class="col-md-3 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 fw-bold" style="color: #FDEF42;">La Ferme Ousfa</h5>
+                    <p>
+                        Votre source de volaille et de produits maraîchers frais, directement du producteur au consommateur à Diamniadio.
+                    </p>
+                </div>
+
+                <div class="col-md-2 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 fw-bold" style="color: #FDEF42;">Liens Rapides</h5>
+                    <p><a href="{{ url_for('main.index') }}" class="text-white" style="text-decoration: none;">Accueil</a></p>
+                    <p><a href="{{ url_for('products.produits') }}" class="text-white" style="text-decoration: none;">Nos Produits</a></p>
+                    <p><a href="{{ url_for('main.contact') }}" class="text-white" style="text-decoration: none;">Contact</a></p>
+                </div>
+
+                <div class="col-md-3 col-lg-2 col-xl-2 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 fw-bold" style="color: #FDEF42;">Contact</h5>
+                    <p class="d-flex align-items-center"><i class="fas fa-home me-3"></i>Dakar, Sénégal</p>
+                    <p class="d-flex align-items-center"><i class="fas fa-envelope me-3"></i>ibouseye@gamil.com</p>
+                    <p class="d-flex align-items-center"><i class="fas fa-phone me-3"></i>+221 77 344 76 68</p>
+                </div>
+
+                <div class="col-md-4 col-lg-3 col-xl-3 mx-auto mt-3">
+                    <h5 class="text-uppercase mb-4 fw-bold" style="color: #FDEF42;">Newsletter</h5>
+                    <p>Abonnez-vous à notre newsletter pour recevoir les dernières nouvelles et offres spéciales !</p>
+                    <form action="{{ url_for('main.subscribe_newsletter') }}" method="POST">
+                        {{ newsletter_form.hidden_tag() }}
+                        <div class="input-group mb-3">
+                            {{ newsletter_form.email(class="form-control", placeholder="Votre adresse e-mail") }}
+                            <button class="btn btn-primary" type="submit">{{ newsletter_form.submit.label }}</button>
+                        </div>
+                        {% if newsletter_form.email.errors %}
+                            <div class="text-danger">
+                                {% for error in newsletter_form.email.errors %}
+                                    <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </form>
+                </div>
+
+            </div>
+
+            <hr class="my-3">
+
+            <div class="row align-items-center">
+                <div class="col-md-7 col-lg-8">
+                    <p class="mb-0">&copy; 2025 La Ferme Ousfa - Tous droits réservés.</p>
+                </div>
+                <div class="col-md-5 col-lg-4">
+                    <div class="text-center text-md-end">
+                        <p class="mb-0">{{ moment().format('dddd, DD/MM/YYYY HH:mm') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 
+        Intégration du JavaScript de Bootstrap via un CDN.
+        Certains composants interactifs (comme le menu hamburger sur mobile) ont besoin de ce JS.
+        On le place à la fin du <body> pour ne pas ralentir le chargement du contenu visible de la page.
+    -->
+    {% assets "js_all" %}
+        <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    {% block scripts %}
+    {{ moment.include_moment() }}
+    <script>
+        moment.locale('fr'); // Force la locale française pour Moment.js
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.7.1/lightgallery.min.js"></script>
+    {% endblock %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sélectionne toutes les alertes
+            let alerts = document.querySelectorAll('.alert');
+
+            alerts.forEach(function(alert) {
+                // Ne fait disparaître que les alertes 'success' et 'info'
+                if ((alert.classList.contains('alert-success') || alert.classList.contains('alert-info')) && !alert.classList.contains('milestone-win')) {
+                    setTimeout(function() {
+                        let bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }, 3000);
+                }
+            });
+
+            // Gérer la modale de félicitations
+            var milestoneModalElement = document.getElementById('milestoneModal');
+            if (milestoneModalElement) {
+                var milestoneModal = new bootstrap.Modal(milestoneModalElement);
+                var confettiContainer = milestoneModalElement.querySelector('.confetti-container');
+
+                // Fonction pour créer un confetti
+                function createConfetti() {
+                    const confetti = document.createElement('div');
+                    confetti.classList.add('confetti');
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's'; // Durée entre 2 et 5 secondes
+                    confetti.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    confettiContainer.appendChild(confetti);
+
+                    // Supprimer le confetti après l'animation
+                    setTimeout(() => {
+                        confetti.remove();
+                    }, 5000);
+                }
+
+                // Afficher la modale et lancer les confettis
+                milestoneModal.show();
+                for (let i = 0; i < 100; i++) { // Lancer 100 confettis
+                    createConfetti();
+                }
+            }
+
+            // Gérer l'affichage du mot de passe
+            const passwordToggles = document.querySelectorAll('.password-toggle-icon');
+            passwordToggles.forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const passwordInput = this.previousElementSibling;
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye-slash" viewBox="0 0 16 16"><path d="M13.359 11.238C15.06 9.72 16 8 16 8s-3-5.5-8-5.5a7.028 7.028 0 0 0-2.79.588l.77.771A5.944 5.944 0 0 1 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.134 13.134 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-.716 0-1.39-.133-2.02-.36l.77.772A4.94 4.94 0 0 1 8 13.5c2.12 0 3.879-1.168 5.168-2.457a13.134 13.134 0 0 1 1.66-1.815z"/><path d="M1.146 1.146a.5.5 0 0 1 .708 0l12 12a.5.5 0 0 1-.708.708l-12-12a.5.5 0 0 1 0-.708z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>';
+                    } else {
+                        passwordInput.type = 'password';
+                        this.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eye" viewBox="0 0 16 16"><path d="M16 8s-3-5.5-8-5.5S0 8 0 8s3 5.5 8 5.5S16 8 16 8zM1.173 8a13.133 13.133 0 0 1 1.66-2.043C4.12 4.668 5.88 3.5 8 3.5c2.12 0 3.879 1.168 5.168 2.457A13.133 13.133 0 0 1 14.828 8c-.058.087-.122.183-.195.288-.335.48-.83 1.12-1.465 1.755C11.879 11.332 10.119 12.5 8 12.5c-2.12 0-3.879-1.168-5.168-2.457A13.133 13.133 0 0 1 1.172 8z"/><path d="M8 5.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+{% extends "admin_base.html" %}
+
+{% block admin_content %}
+    <h1 class="mb-4">Gestion des Clients Inscrits</h1>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="alert alert-light mb-0" role="alert">
+            Nombre total de clients inscrits : <strong>{{ customer_count }}</strong>
+        </div>
+        <a href="{{ url_for('admin.export_customers_excel') }}" class="btn btn-success">Exporter en Excel</a>
+    </div>
+
+    {% if customers %}
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">#ID</th>
+                    <th scope="col">Nom d'utilisateur</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Date d'inscription</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <th scope="row">{{ customer.id }}</th>
+                    <td>{{ customer.username }}</td>
+                    <td>{{ customer.email }}</td>
+                    <td>{{ customer.date_registered.strftime('%d/%m/%Y à %H:%M') }}</td>
+                    <td>
+                        {% if current_user.is_admin %}
+                        <a href="{{ url_for('admin.edit_customer_admin', customer_id=customer.id) }}" class="btn btn-sm btn-primary">Modifier</a>
+                        <form action="{{ url_for('admin.delete_customer_admin', customer_id=customer.id) }}" method="POST" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce client ?');" style="display: inline-block; margin-left: 5px;">
+                            {{ delete_form.hidden_tag() }}
+                            <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-warning" role="alert">
+            Aucun client n'est inscrit pour le moment.
+        </div>
+    {% endif %}
+{% endblock %}

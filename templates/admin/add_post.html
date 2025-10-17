@@ -1,0 +1,38 @@
+{% extends "admin_base.html" %}
+
+{% block admin_content %}
+    <h1 class="mb-4">{{ title }}</h1>
+
+    <div class="card p-4">
+        <form method="POST" action="{{ url_for('admin.edit_post', post_id=post.id) if post else url_for('admin.add_post') }}" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", rows=10) }}
+            </div>
+
+            {% if post and post.cover_image %}
+            <div class="mb-3">
+                <p><strong>Image actuelle :</strong></p>
+                <img src="{{ url_for('static', filename='images/' + post.cover_image) }}" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px;">
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                {{ form.cover_image.label(class="form-label") }}
+                <small class="form-text text-muted">Télécharger une nouvelle image remplacera l'actuelle.</small>
+                {{ form.cover_image(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.video_url.label(class="form-label") }}
+                {{ form.video_url(class="form-control", placeholder="https://www.youtube.com/watch?v=...") }}
+            </div>
+            <button type="submit" class="btn btn-primary">{{ 'Mettre à jour' if post else 'Ajouter' }}</button>
+            <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-secondary">Annuler</a>
+        </form>
+    </div>
+{% endblock %}

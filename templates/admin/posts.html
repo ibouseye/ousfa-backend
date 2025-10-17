@@ -1,0 +1,41 @@
+{% extends "admin_base.html" %}
+
+{% block admin_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestion des Réalisations</h1>
+        <a href="{{ url_for('admin.add_post') }}" class="btn btn-primary">Ajouter une réalisation</a>
+    </div>
+
+    {% if posts %}
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Titre</th>
+                    <th>Date de Création</th>
+                    <th>Auteur</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for post in posts %}
+                    <tr>
+                        <td>{{ post.title }}</td>
+                        <td>{{ post.created_at_formatted }}</td>
+                        <td>{{ post.author.username }}</td>
+                        <td>
+                            <a href="{{ url_for('admin.edit_post', post_id=post.id) }}" class="btn btn-sm btn-info">Modifier</a>
+                            <form method="POST" action="{{ url_for('admin.delete_post', post_id=post.id) }}" style="display: inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette réalisation ?');">
+                                {{ delete_form.hidden_tag() }}
+                                <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="alert alert-info">
+            Aucune réalisation n'a encore été créée.
+        </div>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Ma Liste de Souhaits - La Ferme Ousfa{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">Ma Liste de Souhaits</h1>
+        {% if wishlist_items %}
+            <div class="list-group mb-4">
+                {% for item in wishlist_items %}
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <img src="{{ url_for('static', filename='images/' + item.product.image_file) }}" alt="{{ item.product.name }}" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                        <div>
+                            <h5 class="mb-1">{{ item.product.name }}</h5>
+                            <p class="mb-1 text-muted">{{ item.product.price | format_price }}</p>
+                            <small>Ajouté le: {{ item.added_date.strftime('%d/%m/%Y') }}</small>
+                        </div>
+                    </div>
+                    <div>
+                        <form action="{{ url_for('wishlist.move_to_cart_from_wishlist', item_id=item.id) }}" method="POST" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="btn btn-success btn-sm me-2">
+                                <i class="fas fa-cart-plus"></i> Ajouter au panier
+                            </button>
+                        </form>
+                        <form action="{{ url_for('wishlist.remove_from_wishlist', item_id=item.id) }}" method="POST" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash"></i> Supprimer
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <a href="{{ url_for('products.produits') }}" class="btn btn-primary">Continuer mes achats</a>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                Votre liste de souhaits est vide.
+            </div>
+            <a href="{{ url_for('products.produits') }}" class="btn btn-primary">Découvrir nos produits</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

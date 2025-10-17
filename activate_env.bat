@@ -1,0 +1,3 @@
+@echo off
+ECHO Activant l'environnement virtuel...
+CALL .\venv\Scripts\activate.bat

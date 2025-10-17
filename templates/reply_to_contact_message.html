@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Répondre au Message - La Ferme Ousfa{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Répondre à {{ message.name }}</h1>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            <label for="recipient_email" class="form-label">Destinataire</label>
+            <input type="email" class="form-control" id="recipient_email" name="recipient_email" value="{{ message.email }}" readonly>
+        </div>
+        <div class="mb-3">
+            {{ form.subject.label(class="form-label") }}
+            {{ form.subject(class="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.message_body.label(class="form-label") }}
+            {{ form.message_body(class="form-control", rows=10) }}
+        </div>
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('admin.admin_contact_messages') }}" class="btn btn-secondary">Annuler</a>
+    </form>
+{% endblock %}

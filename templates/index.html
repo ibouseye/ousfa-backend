@@ -1,0 +1,91 @@
+{# On indique que ce fichier hérite de base.html #}
+{% extends "base.html" %}
+
+{# On définit le contenu du bloc "title" de la page d'accueil #}
+{% block title %}Accueil - La Ferme Ousfa{% endblock %}
+
+{# On définit le contenu du bloc "content" #}
+{% block content %}
+    <div class="p-5 mb-4 rounded-3">
+        <div class="container-fluid py-5">
+            <h1 class="display-5 fw-bold">Bienvenue à La Ferme Ousfa</h1>
+            <p class="col-md-8 fs-4">Votre source de volaille (poulets, pintades, oies, canards) et de produits maraîchers frais, directement du producteur au consommateur à Diamniadio.</p>
+            <a class="btn btn-primary btn-lg" href="{{ url_for('products.produits') }}" role="button">Découvrir nos produits</a>
+        </div>
+    </div>
+
+    {# Carousel pour les bannières de la page d'accueil #}
+    {% if homepage_banners %}
+    <section class="py-5"> {# Création du "vide" avec un padding vertical #}
+        <div style="max-width: 83.33%; margin-left: auto; margin-right: auto;">
+            <div id="homepageBannerCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-indicators">
+                {% for banner in homepage_banners %}
+                <button type="button" data-bs-target="#homepageBannerCarousel" data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}" aria-current="{% if loop.first %}true{% endif %}" aria-label="Slide {{ loop.index }}"></button>
+                {% endfor %}
+            </div>
+            <div class="carousel-inner">
+                {% for banner in homepage_banners %}
+                <div class="carousel-item {% if loop.first %}active{% endif %}">
+                    <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" class="d-block w-100" alt="{{ banner.title }}" style="max-height: 200px; object-fit: contain;">
+                    <div class="carousel-caption d-none d-md-block" style="background-color: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;">
+                        <h5>{{ banner.title }}</h5>
+                        <p>{{ banner.message }}</p>
+                        {% if banner.link_url %}
+                            <a href="{{ banner.link_url }}" class="btn btn-primary btn-sm">En savoir plus</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#homepageBannerCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#homepageBannerCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+        </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-6">
+            <h2>Notre Élevage</h2>
+            <p>Nous élevons notre volaille en plein air, avec une alimentation saine et naturelle, pour vous garantir une viande de qualité supérieure.</p>
+        </div>
+        <div class="col-md-6">
+            <h2>Notre Maraîchage</h2>
+            <p>Nos légumes sont cultivés avec soin, sans pesticides, pour vous offrir des produits frais, savoureux et pleins de vitamines.</p>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <h2>Nos Derniers Produits</h2>
+    {% if latest_products %}
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% for product in latest_products %}
+        <div class="col">
+            <div class="card h-100">
+                <img src="{{ url_for('static', filename='images/' + product.image_file) }}" class="card-img-top" alt="{{ product.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <h6 class="card-subtitle mb-2 text-muted">{{ product.category.name }}</h6>
+                    <p class="card-text">{{ product.description }}</p>
+                </div>
+                <div class="card-footer">
+                    <p class="card-text"><strong>Prix : {{ product.price | default('N/A', true) }} FCFA</strong></p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+        Aucun produit n'est enregistré pour le moment.
+    </div>
+    {% endif %}
+{% endblock %}

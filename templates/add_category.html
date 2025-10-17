@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Ajouter une Catégorie{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h1 class="mb-4">Ajouter une Catégorie</h1>
+        <form method="POST" action="{{ url_for('admin.add_category') if not category else url_for('admin.edit_category', category_id=category.id) }}">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control") }}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('admin.admin_categories') }}" class="btn btn-secondary">Annuler</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

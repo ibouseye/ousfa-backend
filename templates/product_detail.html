@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+
+{% block title %}{{ product.name }} - La Ferme Ousfa{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+    lightGallery(document.getElementById('lightgallery'), {
+        selector: 'a'
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const voteButtons = document.querySelectorAll('.vote-button');
+        const csrfToken = document.querySelector('input[name="csrf_token"]').value; // Get CSRF token from the review form
+
+        voteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const reviewId = this.dataset.reviewId;
+                const voteType = this.dataset.voteType;
+                const url = `/review/${reviewId}/vote`;
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken // Include CSRF token in headers
+                    },
+                    body: JSON.stringify({ vote_type: voteType })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update counts on the page
+                        const usefulCountSpan = this.closest('.mt-2').querySelector('.useful-count');
+                        const notUsefulCountSpan = this.closest('.mt-2').querySelector('.not-useful-count');
+                        
+                        usefulCountSpan.textContent = data.useful_count;
+                        notUsefulCountSpan.textContent = data.not_useful_count;
+
+                        // Update button active states
+                        const parentDiv = this.closest('.mt-2');
+                        parentDiv.querySelectorAll('.vote-button').forEach(btn => btn.classList.remove('active'));
+                        if (data.message !== 'Votre vote a été retiré.') { // Only activate if a vote is set
+                            this.classList.add('active');
+                        }
+                        
+                        // Display flash message (optional, as we have counts updated)
+                        // flashMessage(data.message, 'success'); 
+                    } else {
+                        alert(data.message); // Display error message
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Une erreur est survenue lors de l\'enregistrement de votre vote.');
+                });
+            });
+        });
+
+        // Helper function to display flash messages (if needed)
+        function flashMessage(message, category) {
+            const alertContainer = document.querySelector('.container.mt-4'); // Adjust selector if needed
+            const alertHtml = `
+                <div class="alert alert-${category} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            alertContainer.insertAdjacentHTML('afterbegin', alertHtml);
+            setTimeout(() => {
+                const alertElement = alertContainer.querySelector('.alert');
+                if (alertElement) {
+                    new bootstrap.Alert(alertElement).close();
+                }
+            }, 3000);
+        }
+    });
+</script>
+{% endblock %}
+
+
+
+{% block content %}
+    {# Carousel pour les bannières de la page produits #}
+    {% if product_page_banners %}
+    <section class="py-5">
+        <div style="max-width: 83.33%; margin-left: auto; margin-right: auto;">
+            <div id="productPageBannerCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    {% for banner in product_page_banners %}
+                    <button type="button" data-bs-target="#productPageBannerCarousel" data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}" aria-current="{% if loop.first %}true{% endif %}" aria-label="Slide {{ loop.index }}"></button>
+                    {% endfor %}
+                </div>
+                <div class="carousel-inner">
+                    {% for banner in product_page_banners %}
+                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                        <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" class="d-block w-100" alt="{{ banner.title }}" style="max-height: 200px; object-fit: contain;">
+                        <div class="carousel-caption d-none d-md-block" style="background-color: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;">
+                            <h5>{{ banner.title }}</h5>
+                            <p>{{ banner.message }}</p>
+                            {% if banner.link_url %}
+                                <a href="{{ banner.link_url }}" class="btn btn-primary btn-sm">En savoir plus</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#productPageBannerCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#productPageBannerCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+<div class="row">
+    <div class="col-md-6" id="lightgallery">
+        <!-- Image principale -->
+        <a href="{{ url_for('static', filename='images/' + product.image_file) }}">
+            <img id="mainProductImage" src="{{ url_for('static', filename='images/' + product.image_file) }}" class="img-fluid rounded mb-3" alt="{{ product.name }}">
+        </a>
+        
+        <!-- Miniatures des images -->
+        <div class="d-flex flex-wrap mb-4">
+            {% for img in product.images %}
+                <a href="{{ url_for('static', filename='images/' + img.image_file) }}" class="me-2 mb-2">
+                    <img src="{{ url_for('static', filename='images/' + img.image_file) }}" class="img-thumbnail" alt="{{ product.name }}" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;">
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-6">
+        <h1>{{ product.name }}</h1>
+        <h4 class="text-muted">{{ product.category.name }}</h4>
+        <p>Note moyenne : {{ "%.1f"|format(avg_rating) }} / 5</p>
+        <p class="lead">{{ product.description }}</p>
+        <hr>
+        <h3>{{ "{:,.2f}".format(product.price) }} FCFA</h3>
+        <p><strong>Stock disponible :</strong> {{ product.stock }}</p>
+        
+        {% if product.stock > 0 %}
+            <form action="{{ url_for('cart.add_to_cart') }}" method="POST" class="d-flex mt-3">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control me-2" style="width: 100px;">
+                <button type="submit" class="btn btn-success">Ajouter au panier</button>
+            </form>
+            {% if current_user.is_authenticated and isinstance(current_user, Customer) %}
+                <form action="{{ url_for('wishlist.add_to_wishlist', product_id=product.id) }}" method="POST" class="mt-2">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-outline-info"><i class="fas fa-heart me-2"></i>Ajouter à la liste de souhaits</button>
+                </form>
+            {% endif %}
+        {% else %}
+            <p class="text-danger mt-3">Rupture de stock</p>
+            <button type="button" class="btn btn-secondary" disabled>Ajouter au panier</button>
+        {% endif %}
+
+        <a href="{{ url_for('products.produits') }}" class="btn btn-outline-secondary mt-4">Retour à la liste des produits</a>
+    </div>
+</div>
+
+<hr class="my-4">
+
+<!-- Section des avis -->
+<div class="row">
+    <div class="col-md-8">
+        <h2>Avis des clients</h2>
+        {% if reviews_with_votes %}
+            {% for review_data in reviews_with_votes %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ review_data.review.customer.username }}</h5>
+                        <h6 class="card-subtitle mb-2 text-muted">Note : {{ review_data.review.rating }}/5</h6>
+                        <p class="card-text">{{ review_data.review.comment }}</p>
+                        <small class="text-muted">Posté le {{ review_data.review.date_posted.strftime('%d/%m/%Y') }}</small>
+                        
+                        {% if current_user.is_authenticated and isinstance(current_user, Customer) and review_data.review.customer_id != current_user.id %}
+                            <div class="mt-2">
+                                <span class="text-muted me-2">Cet avis vous a-t-il été utile ?</span>
+                                <button type="button" class="btn btn-sm btn-outline-success vote-button {% if review_data.user_vote == 'useful' %}active{% endif %}" data-review-id="{{ review_data.review.id }}" data-vote-type="useful">
+                                    Utile (<span class="useful-count">{{ review_data.useful_count }}</span>)
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger vote-button {% if review_data.user_vote == 'not_useful' %}active{% endif %}" data-review-id="{{ review_data.review.id }}" data-vote-type="not_useful">
+                                    Non utile (<span class="not-useful-count">{{ review_data.not_useful_count }}</span>)
+                                </button>
+                            </div>
+                        {% else %}
+                            <div class="mt-2">
+                                <span class="text-muted me-2">Utile : <span class="useful-count">{{ review_data.useful_count }}</span></span>
+                                <span class="text-muted">Non utile : <span class="not-useful-count">{{ review_data.not_useful_count }}</span></span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Il n'y a pas encore d'avis pour ce produit.</p>
+        {% endif %}
+    </div>
+    <div class="col-md-4">
+        {% if current_user.is_authenticated and isinstance(current_user, Customer) %}
+            {% if has_purchased %}
+                <h3>Laisser un avis</h3>
+                <form method="POST">
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.rating.label(class="form-label") }}
+                        {{ form.rating(class="form-select") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.comment.label(class="form-label") }}
+                        {{ form.comment(class="form-control", rows=4) }}
+                    </div>
+                    {{ form.submit(class="btn btn-primary") }}
+                </form>
+            {% else %}
+                <div class="alert alert-info">
+                    Vous devez avoir acheté ce produit pour laisser un avis.
+                </div>
+            {% endif %}
+        {% elif not current_user.is_authenticated %}
+            <div class="alert alert-warning">
+                <a href="{{ url_for('auth.login') }}">Connectez-vous</a> pour laisser un avis.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

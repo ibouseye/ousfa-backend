@@ -1,0 +1,16 @@
+<p>Bonjour {{ order.customer.username }},</p>
+
+<p>Merci pour votre commande ! Nous avons bien reçu votre paiement et votre commande est en cours de traitement.</p>
+
+<h3>Récapitulatif de votre commande #{{ order.id }}</h3>
+<ul>
+    {% for item in order.items %}
+        <li>{{ item.product.name }} (x{{ item.quantity }}) - {{ "{:,.2f}".format(item.price_at_purchase) }} FCFA</li>
+    {% endfor %}
+</ul>
+<p><strong>Total : {{ "{:,.2f}".format(order.total_price) }} FCFA</strong></p>
+
+<p>Vous pouvez suivre l'évolution de votre commande en vous connectant à votre compte sur notre site.</p>
+
+<p>Merci de votre confiance,</p>
+<p>L'équipe de La Ferme Ousfa</p>

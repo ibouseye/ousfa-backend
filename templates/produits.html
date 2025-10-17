@@ -1,0 +1,174 @@
+{# On indique que ce fichier hérite de base.html #}
+{% extends "base.html" %}
+
+{# On définit le contenu du bloc "title" de la page des produits #}
+{% block title %}Nos Produits - La Ferme Ousfa{% endblock %}
+
+{# On définit le contenu du bloc "content" #}
+{% block content %}
+    <h1 class="mb-4">Nos Produits</h1>
+
+    {# Carousel pour les bannières de la page produits #}
+    {% if product_page_banners %}
+    <section class="py-5"> {# Création du "vide" avec un padding vertical #}
+        <div style="max-width: 83.33%; margin-left: auto; margin-right: auto;">
+            <div id="productPageBannerCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    {% for banner in product_page_banners %}
+                    <button type="button" data-bs-target="#productPageBannerCarousel" data-bs-slide-to="{{ loop.index0 }}" class="{% if loop.first %}active{% endif %}" aria-current="{% if loop.first %}true{% endif %}" aria-label="Slide {{ loop.index }}"></button>
+                    {% endfor %}
+                </div>
+                <div class="carousel-inner">
+                    {% for banner in product_page_banners %}
+                    <div class="carousel-item {% if loop.first %}active{% endif %}>
+                        <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" class="d-block w-100" alt="{{ banner.title }}" style="max-height: 200px; object-fit: contain;">
+                        <div class="carousel-caption d-none d-md-block" style="background-color: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;">
+                            <h5>{{ banner.title }}</h5>
+                            <p>{{ banner.message }}</p>
+                            {% if banner.link_url %}
+                                <a href="{{ banner.link_url }}" class="btn btn-primary btn-sm">En savoir plus</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#productPageBannerCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#productPageBannerCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <div class="row"> {# This row will contain the sidebar and the main product content #}
+        <div class="col-md-3"> {# Sidebar column #}
+            {% if sidebar_banners %}
+            <div class="card mb-4">
+                <div class="card-header">Bannières Spéciales</div>
+                <div class="card-body">
+                    {% for banner in sidebar_banners %}
+                        <div class="mb-3">
+                            {% if banner.image_file %}
+                                <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" class="img-fluid rounded" alt="{{ banner.title }}">
+                            {% endif %}
+                            <h5 class="card-title mt-2">{{ banner.title }}</h5>
+                            <p class="card-text">{{ banner.message }}</p>
+                            {% if banner.link_url %}
+                                <a href="{{ banner.link_url }}" class="btn btn-sm btn-primary">En savoir plus</a>
+                            {% endif %}
+                        </div>
+                        {% if not loop.last %}<hr>{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {# Existing filters moved to sidebar #}
+            <div class="card mb-4">
+                <div class="card-header">Filtres de recherche</div>
+                <div class="card-body">
+                    <form action="{{ url_for('products.produits') }}" method="get">
+                        <div class="mb-3">
+                            <label for="search_query" class="form-label">Rechercher</label>
+                            <input class="form-control" type="search" id="search_query" name="q" value="{{ search_query or '' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="category_select" class="form-label">Catégorie</label>
+                            <select name="category" id="category_select" class="form-select">
+                                <option value="">Toutes les catégories</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if selected_category|int == category.id %}selected{% endif %}>{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sort_by_select" class="form-label">Trier par</label>
+                            <select name="sort_by" id="sort_by_select" class="form-select">
+                                <option value="name_asc" {% if sort_by == 'name_asc' %}selected{% endif %}>Nom (A-Z)</option>
+                                <option value="name_desc" {% if sort_by == 'name_desc' %}selected{% endif %}>Nom (Z-A)</option>
+                                <option value="price_asc" {% if sort_by == 'price_asc' %}selected{% endif %}>Prix (Croissant)</option>
+                                <option value="price_desc" {% if sort_by == 'price_desc' %}selected{% endif %}>Prix (Décroissant)</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary w-100" type="submit">Appliquer les filtres</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-9"> {# Main product content column #}
+            {% if products.items %}
+            <div class="row g-4">
+        {# On boucle sur chaque produit que le backend nous a envoyé #}
+        {% for product in products.items %}
+        <div class="col-12 col-sm-6 col-md-4">
+            <div class="card h-100">
+                        {# L'image du produit. On utilise url_for pour générer le chemin vers le dossier static. #}
+                        <div style="aspect-ratio: 1 / 1; overflow: hidden;">
+                            <img src="{{ url_for('static', filename='images/' + product.image_file) }}" class="card-img-top" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover; object-position: center top;">
+                        </div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ product.name }}</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">{{ product.category.name }}</h6>
+                            <p class="card-text">{{ product.description }}</p>
+                        </div>
+                        <div class="card-footer">
+                            <p class="card-text"><strong>Prix : {{ product.price | default('N/A', true) }} FCFA</strong></p>
+                            <p class="card-text"><strong>Stock disponible : {{ product.stock }}</strong></p>
+                            {% if product.stock > 0 %}
+                                <form action="{{ url_for('cart.add_to_cart') }}" method="POST" class="d-flex mt-2">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                    <input type="hidden" name="product_id" value="{{ product.id }}">
+                                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock }}" class="form-control form-control-sm me-2" style="width: 70px;">
+                                    <button type="submit" class="btn btn-sm btn-success">Ajouter au panier</button>
+                                    <a href="{{ url_for('products.product_detail', product_id=product.id) }}" class="btn btn-sm btn-info ms-2">Détails</a>
+                                </form>
+                            {% else %}
+                                <p class="text-danger">Rupture de stock</p>
+                                <button type="button" class="btn btn-sm btn-secondary" disabled>Ajouter au panier</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info" role="alert">
+                Aucun produit ne correspond à votre recherche.
+            </div>
+            {% endif %}
+
+            <!-- Liens de pagination -->
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if products.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('products.produits', page=products.prev_num, q=search_query, category=selected_category, sort_by=sort_by) }}">Précédent</a>
+                        </li>
+                    {% endif %}
+                    {% for page_num in products.iter_pages() %}
+                        {% if page_num %}
+                            {% if products.page == page_num %}
+                                <li class="page-item active"><a class="page-link" href="{{ url_for('products.produits', page=page_num, q=search_query, category=selected_category, sort_by=sort_by) }}">{{ page_num }}</a></li>
+                            {% else %}
+                                <li class="page-item"><a class="page-link" href="{{ url_for('products.produits', page=page_num, q=search_query, category=selected_category, sort_by=sort_by) }}">{{ page_num }}</a></li>
+                            {% endif %}
+                        {% else %}
+                            <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if products.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('products.produits', page=products.next_num, q=search_query, category=selected_category, sort_by=sort_by) }}">Suivant</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+{% endblock %}

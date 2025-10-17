@@ -1,0 +1,41 @@
+{% extends "admin_base.html" %}
+
+{% block admin_content %}
+    <h1 class="mb-4">Modifier le contenu de la page : {{ content.title }}</h1>
+
+    <div class="card p-4">
+        <form method="POST" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.title.label(class="form-label") }}
+                {{ form.title(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.subtitle.label(class="form-label") }}
+                {{ form.subtitle(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.body.label(class="form-label") }}
+                {{ form.body(class="form-control", rows=15) }}
+            </div>
+
+            {% if content.image_file %}
+            <div class="mb-3">
+                <p><strong>Image actuelle :</strong></p>
+                <img src="{{ url_for('static', filename='images/' + content.image_file) }}" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px;">
+            </div>
+            {% endif %}
+
+            <div class="mb-3">
+                {{ form.image_file.label(class="form-label") }}
+                <small class="form-text text-muted">Télécharger une nouvelle image remplacera l'actuelle.</small>
+                {{ form.image_file(class="form-control") }}
+            </div>
+            
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    </div>
+{% endblock %}

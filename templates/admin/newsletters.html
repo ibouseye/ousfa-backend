@@ -1,0 +1,85 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Gestion des Newsletters</h1>
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-newspaper mr-1"></i>
+            {% if show_archived %}
+                Newsletters Archivées
+            {% else %}
+                Newsletters Actives
+            {% endif %}
+            <div class="float-right">
+                {% if show_archived %}
+                    <a href="{{ url_for('admin.newsletters') }}" class="btn btn-secondary btn-sm">Voir les actives</a>
+                {% else %}
+                    <a href="{{ url_for('admin.newsletters', archived=True) }}" class="btn btn-secondary btn-sm">Voir les archives</a>
+                {% endif %}
+                <a href="{{ url_for('admin.new_newsletter') }}" class="btn btn-primary btn-sm">Créer une nouvelle newsletter</a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Sujet</th>
+                            <th>Date de création</th>
+                            <th>Envoyée</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for newsletter in newsletters.items %}
+                        <tr>
+                            <td>{{ newsletter.subject }}</td>
+                            <td>{{ newsletter.timestamp.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>{% if newsletter.sent %}Oui{% else %}Non{% endif %}</td>
+                            <td>
+                                <a href="{{ url_for('admin.view_newsletter', newsletter_id=newsletter.id) }}" class="btn btn-info btn-sm">Voir</a>
+                                <form action="{{ url_for('admin.send_newsletter', newsletter_id=newsletter.id) }}" method="POST" style="display:inline;">
+                                    {{ send_form.hidden_tag() }}
+                                    <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Êtes-vous sûr de vouloir envoyer cette newsletter ?');">Envoyer</button>
+                                </form>
+                                {% if newsletter.archived %}
+                                    <form action="{{ url_for('admin.unarchive_newsletter', newsletter_id=newsletter.id) }}" method="POST" style="display:inline;">
+                                        {{ archive_form.hidden_tag() }}
+                                        <button type="submit" class="btn btn-warning btn-sm">Désarchiver</button>
+                                    </form>
+                                {% else %}
+                                    <form action="{{ url_for('admin.archive_newsletter', newsletter_id=newsletter.id) }}" method="POST" style="display:inline;">
+                                        {{ archive_form.hidden_tag() }}
+                                        <button type="submit" class="btn btn-secondary btn-sm">Archiver</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if newsletters.has_prev %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('admin.newsletters', page=newsletters.prev_num, archived=show_archived) }}">Précédent</a></li>
+                    {% endif %}
+                    {% for page_num in newsletters.iter_pages() %}
+                        {% if page_num %}
+                            <li class="page-item {% if newsletters.page == page_num %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('admin.newsletters', page=page_num, archived=show_archived) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        {% endif %}
+                    {% endfor %}
+                    {% if newsletters.has_next %}
+                        <li class="page-item"><a class="page-link" href="{{ url_for('admin.newsletters', page=newsletters.next_num, archived=show_archived) }}">Suivant</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+{% endblock %}

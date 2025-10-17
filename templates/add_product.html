@@ -1,0 +1,156 @@
+{# On indique que ce fichier hérite de base.html #}
+{% extends "admin_base.html" %}
+
+{% block title %}{% if product %}Modifier{% else %}Ajouter{% endif %} un Produit - La Ferme Ousfa{% endblock %}
+
+{# On définit le contenu du bloc "content" #}
+{% block content %}
+    <h1 class="mb-4">{% if product %}Modifier{% else %}Ajouter{% endif %} un Produit</h1>
+
+    <div class="card p-4">
+        <form method="POST" action="" enctype="multipart/form-data" id="product-form">
+            {{ form.hidden_tag() }} {# Inclut le jeton CSRF pour le formulaire principal #}
+            <div class="mb-3">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.category.label(class="form-label") }}
+                {{ form.category(class="form-select") }}
+            </div>
+            <div class="mb-3">
+                {{ form.description.label(class="form-label") }}
+                {{ form.description(class="form-control", rows=3) }}
+            </div>
+            <div class="mb-3">
+                {{ form.price.label(class="form-label") }}
+                {{ form.price(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.stock.label(class="form-label") }}
+                {{ form.stock(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.min_stock_threshold.label(class="form-label") }}
+                {{ form.min_stock_threshold(class="form-control") }}
+            </div>
+            <div class="mb-3">
+                {{ form.image_files.label(class="form-label") }}
+                {{ form.image_files(class="form-control", multiple=True) }}
+                {% if form.image_files.errors %}
+                    <div class="invalid-feedback d-block">
+                        {% for error in form.image_files.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            {{ form.submit(class="btn btn-primary") }}
+            <a href="{{ url_for('admin.admin_products') }}" class="btn btn-secondary">Annuler</a>
+        </form>
+
+        {% if product and product.images %}
+            <div class="mt-4">
+                <label class="form-label">Images du produit (glisser-déposer pour réorganiser)</label>
+                <div class="d-flex flex-wrap" id="additional-images-container">
+                    {% for img in product.images|sort(attribute='position') %}
+                        <div class="me-2 mb-2 text-center" data-image-id="{{ img.id }}">
+                            <div class="drag-handle" style="cursor: grab; color: #ccc; text-align: center;"><i class="fas fa-grip-vertical"></i></div>
+                            <img src="{{ url_for('static', filename='images/' + img.image_file) }}" 
+                                 alt="Image du produit" 
+                                 style="width: 100px; height: 100px; object-fit: cover; {% if img.image_file == product.image_file %}border: 3px solid #FDEF42;{% endif %}">
+                            
+                            <div class="mt-1">
+                                <button type="button" 
+                                        class="btn btn-secondary btn-sm set-main-image-btn" 
+                                        data-action="{{ url_for('admin.set_main_image', product_id=product.id, image_id=img.id) }}"
+                                        {% if img.image_file == product.image_file %}disabled{% endif %}>
+                                    Principale
+                                </button>
+                                <button type="button" 
+                                        class="btn btn-danger btn-sm delete-image-btn" 
+                                        data-action="{{ url_for('admin.delete_image', image_id=img.id) }}">
+                                    Supprimer
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    {# Formulaires cachés pour les actions sur les images #}
+    <form method="POST" id="delete-image-form" style="display: none;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    </form>
+    <form method="POST" id="set-main-image-form" style="display: none;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    </form>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Gestion de la suppression d'image
+    const deleteButtons = document.querySelectorAll('.delete-image-btn');
+    const deleteForm = document.getElementById('delete-image-form');
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette image ?')) {
+                const actionUrl = this.dataset.action;
+                deleteForm.action = actionUrl;
+                deleteForm.submit();
+            }
+        });
+    });
+
+    // Gestion de la définition de l'image principale
+    const setMainButtons = document.querySelectorAll('.set-main-image-btn');
+    const setMainForm = document.getElementById('set-main-image-form');
+
+    setMainButtons.forEach(button => {
+        button.addEventListener('click', function (event) {
+            event.preventDefault();
+            if (confirm('Êtes-vous sûr de vouloir définir cette image comme principale ?')) {
+                const actionUrl = this.dataset.action;
+                setMainForm.action = actionUrl;
+                setMainForm.submit();
+            }
+        });
+    });
+
+    // Gestion de la réorganisation des images
+    const additionalImagesContainer = document.getElementById('additional-images-container');
+    if (additionalImagesContainer) {
+        new Sortable(additionalImagesContainer, {
+            animation: 150,
+            handle: '.drag-handle', // Spécifie la poignée pour le glisser-déposer
+            ghostClass: 'sortable-ghost', // Class name for the drop placeholder
+            onEnd: function (evt) {
+                // Envoyer le nouvel ordre au backend via AJAX
+                const newOrder = Array.from(evt.from.children).map((item, index) => ({
+                    id: item.dataset.imageId,
+                    position: index
+                }));
+                
+                {% if product %}
+                fetch('/admin/product/{{ product.id }}/reorder-images', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify({ order: newOrder })
+                });
+                {% endif %}
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

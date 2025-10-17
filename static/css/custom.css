@@ -1,0 +1,26 @@
+.navbar-brand .brand-logo-img {
+    background-color: #f8f9fa;
+    border-radius: 50%;
+    position: relative;
+    top: -5px;
+}
+
+.navbar-brand .brand-green { color: #00853F; text-shadow: 0 0 3px rgba(255, 255, 255, 0.7); }
+.navbar-brand .brand-yellow { color: #FDEF42; }
+.navbar-brand .brand-red { color: #E31B23; }
+
+.navbar-brand .brand-star-container {
+    position: relative;
+    display: inline-block;
+    line-height: 1;
+}
+
+.navbar-brand .brand-star {
+    position: absolute;
+    top: 48%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #FDEF42;
+    font-size: 0.6em;
+    pointer-events: none;
+}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-3">
+            <div class="list-group">
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'admin.admin_dashboard' %}active{% endif %}"><i class="fas fa-tachometer-alt me-2"></i>Tableau de Bord</a>
+                <a href="{{ url_for('admin.admin_products') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'admin.admin_products' or request.endpoint == 'admin.add_product' or request.endpoint == 'admin.edit_product' %}active{% endif %}"><i class="fas fa-box-open me-2"></i>Gestion Produits</a>
+                <a href="{{ url_for('admin.admin_categories') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'admin.admin_categories' or request.endpoint == 'admin.add_category' or request.endpoint == 'admin.edit_category' %}active{% endif %}"><i class="fas fa-tags me-2"></i>Gestion Catégories</a>
+                <a href="{{ url_for('admin.admin_posts') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'admin.admin_posts' or request.endpoint == 'admin.add_post' or request.endpoint == 'admin.edit_post' %}active{% endif %}"><i class="fas fa-images me-2"></i>Gestion Réalisations</a>
+                <a href="{{ url_for('admin.edit_page', page_name='about_us') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'admin.edit_page' and request.view_args.page_name == 'about_us' %}active{% endif %}"><i class="fas fa-info-circle me-2"></i>Page "Qui sommes-nous ?"</a>
+                <a href="{{ url_for('admin.admin_banners') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'admin.admin_banners' or request.endpoint == 'admin.add_banner' or request.endpoint == 'admin.edit_banner' %}active{% endif %}"><i class="fas fa-bullhorn me-2"></i>Gestion Bannières</a>
+                <a href="{{ url_for('admin.newsletters') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'admin.newsletters' or request.endpoint == 'admin.new_newsletter' or request.endpoint == 'admin.view_newsletter' %}active{% endif %}"><i class="fas fa-newspaper me-2"></i>Gestion Newsletters</a>
+                <a href="{{ url_for('admin.admin_milestones') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'admin.admin_milestones' %}active{% endif %}"><i class="fas fa-trophy me-2"></i>Gestion Paliers Gagnants</a>
+                <a href="{{ url_for('admin.admin_orders') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'admin.admin_orders' %}active{% endif %}"><i class="fas fa-file-invoice-dollar me-2"></i>Gestion Commandes</a>
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.admin_users') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'admin.admin_users' or request.endpoint == 'admin.add_staff' or request.endpoint == 'admin.edit_user' %}active{% endif %}"><i class="fas fa-users-cog me-2"></i>Gestion Personnel</a>
+                {% endif %}
+                <a href="{{ url_for('admin.admin_customers') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'admin.admin_customers' or request.endpoint == 'admin.edit_customer_admin' %}active{% endif %}"><i class="fas fa-users me-2"></i>Gestion Clients Inscrits</a>
+                <a href="{{ url_for('admin.admin_contact_messages') }}" class="list-group-item list-group-item-action {% if request.endpoint == 'admin.admin_contact_messages' or request.endpoint == 'admin.reply_to_contact_message' or request.endpoint == 'admin.edit_contact_message' %}active{% endif %}"><i class="fas fa-headset me-2"></i>Messages de Contact</a>
+            </div>
+        </div>
+        <div class="col-md-9">
+            {% block admin_content %}{% endblock %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+{% endblock %}

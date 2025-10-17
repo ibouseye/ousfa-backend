@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Détail de la Commande #{{ order.id }}{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Détail de la Commande #{{ order.id }}</h1>
+
+    <div class="card">
+        <div class="card-header">
+            Informations sur la commande
+        </div>
+        <div class="card-body">
+            <p><strong>Date :</strong> {{ moment(order.date_ordered).format('LLL') }}</p>
+            <p><strong>Client :</strong> {{ order.customer.username }} ({{ order.customer.email }})</p>
+            <p><strong>Statut :</strong> {{ order.status }}</p>
+            <p><strong>Montant Total :</strong> {{ "{:,.2f}".format(order.total_price) }} FCFA</p>
+        </div>
+    </div>
+
+    <h2 class="mt-4 mb-3">Articles de la commande</h2>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Quantité</th>
+                <th>Prix Unitaire</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items %}
+                <tr>
+                    <td>{{ item.product.name }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ "{:,.2f}".format(item.price_at_purchase) }} FCFA</td>
+                    <td>{{ "{:,.2f}".format(item.quantity * item.price_at_purchase) }} FCFA</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if isinstance(current_user, StaffUser) and current_user.is_admin %}
+        <a href="{{ url_for('admin.admin_orders') }}" class="btn btn-secondary mt-3">Retour à la liste des commandes</a>
+    {% else %}
+        <a href="{{ url_for('main.my_orders') }}" class="btn btn-secondary mt-3">Retour à mes commandes</a>
+    {% endif %}
+
+{% endblock %}

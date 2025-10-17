@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Mes Commandes - La Ferme Ousfa{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Mes Commandes</h1>
+
+    {% if orders %}
+        {% for order in orders %}
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                    <span><strong>Commande #{{ order.id }}</strong> - {{ moment(order.date_ordered).format('LLL') }}</span>
+                    <span><strong>Statut :</strong> <span class="badge bg-info">{{ order.status }}</span></span>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for item in order.items %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>
+                                    <img src="{{ url_for('static', filename='images/' + item.product.image_file) }}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px;">
+                                    {{ item.product.name }}
+                                </span>
+                                <span>x {{ item.quantity }}</span>
+                                <span>{{ "{:,.2f}".format(item.price_at_purchase) }} FCFA</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card-footer d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('main.order_detail', order_id=order.id) }}" class="btn btn-primary">Voir les détails</a>
+                    <strong>Total : {{ "{:,.2f}".format(order.total_price) }} FCFA</strong>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Vous n'avez encore passé aucune commande.
+        </div>
+    {% endif %}
+{% endblock %}

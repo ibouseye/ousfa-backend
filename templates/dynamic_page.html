@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ content.title }} - La Ferme Ousfa{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 text-center"> {# Center content within this column #}
+        {# Title and Brand Name above the image #}
+        <h1 class="mb-1">{{ content.title }}</h1>
+        <h2 class="text-muted mb-4">La Ferme OusFa</h2> {# Assuming "La Ferme OusFa" is a static brand name #}
+
+        {% if content.image_file %}
+            <img src="{{ url_for('static', filename='images/' + content.image_file) }}" class="img-fluid rounded mb-4 mx-auto d-block" style="width: 90%; height: auto;" alt="{{ content.title }}">
+        {% endif %}
+        
+        {% if content.subtitle %}
+            <h3 class="text-muted mb-4">{{ content.subtitle }}</h3>
+        {% endif %}
+        <div class="page-content-body text-start"> {# Reset text alignment for body content #}
+            {{ content.body | safe }}
+        </div>
+    </div>
+</div>
+{% endblock %}

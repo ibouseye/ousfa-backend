@@ -1,0 +1,27 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Voir la Newsletter</h1>
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-newspaper mr-1"></i>
+            Sujet: {{ newsletter.subject }}
+        </div>
+        <div class="card-body">
+            <p><strong>Date de création:</strong> {{ newsletter.timestamp.strftime('%d/%m/%Y %H:%M') }}</p>
+            <p><strong>Envoyée:</strong> {% if newsletter.sent %}Oui{% else %}Non{% endif %}</p>
+            <hr>
+            <div>
+                {{ newsletter.body|safe }}
+            </div>
+            <hr>
+            <a href="{{ url_for('admin.newsletters') }}" class="btn btn-secondary">Retour à la liste</a>
+            <form action="{{ url_for('admin.send_newsletter', newsletter_id=newsletter.id) }}" method="POST" style="display:inline;">
+                {{ send_form.hidden_tag() }}
+                <button type="submit" class="btn btn-success" onclick="return confirm('Êtes-vous sûr de vouloir envoyer cette newsletter ?');">Envoyer</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

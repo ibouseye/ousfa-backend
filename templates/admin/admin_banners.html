@@ -1,0 +1,67 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Gestion des Bannières - Admin{% endblock %}
+
+{% block admin_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Gestion des Bannières</h1>
+        <a href="{{ url_for('admin.add_banner') }}" class="btn btn-primary">Ajouter une nouvelle bannière</a>
+    </div>
+
+    {% if banners %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Titre</th>
+                        <th>Message</th>
+                        <th>Image</th>
+                        <th>Active</th>
+                        <th>Début</th>
+                        <th>Fin</th>
+                        <th>Position</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for banner in banners %}
+                        <tr>
+                            <td>{{ banner.id }}</td>
+                            <td>{{ banner.title }}</td>
+                            <td>{{ banner.message[:50] }}...</td> {# Truncate message for display #}
+                            <td>
+                                {% if banner.image_file %}
+                                    <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" alt="{{ banner.title }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                    Aucune
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if banner.is_active %}
+                                    <span class="badge bg-success">Oui</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Non</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ banner.start_date.strftime('%d/%m/%Y') if banner.start_date else 'N/A' }}</td>
+                            <td>{{ banner.end_date.strftime('%d/%m/%Y') if banner.end_date else 'N/A' }}</td>
+                            <td>{{ banner.position }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.edit_banner', banner_id=banner.id) }}" class="btn btn-sm btn-info me-2">Modifier</a>
+                                <form action="{{ url_for('admin.delete_banner', banner_id=banner.id) }}" method="POST" style="display:inline;">
+                                    {{ delete_form.hidden_tag() }}
+                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cette bannière ?');">Supprimer</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Aucune bannière n'a été créée pour le moment.
+        </div>
+    {% endif %}
+{% endblock %}

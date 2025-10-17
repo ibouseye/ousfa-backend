@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - La Ferme Ousfa{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Post Title -->
+            <h1 class="mb-4">{{ post.title }}</h1>
+
+            <!-- Embed Video if it exists -->
+            {% if embed_url %}
+            <div class="ratio ratio-16x9 mb-4">
+                <iframe src="{{ embed_url }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+            {% endif %}
+
+            <!-- Post Cover Image (if no video) -->
+            {% if not embed_url and post.cover_image %}
+            <img src="{{ url_for('static', filename='images/' + post.cover_image) }}" class="img-fluid rounded mb-4" alt="{{ post.title }}">
+            {% endif %}
+
+            <!-- Post Content -->
+            <div class="post-content">
+                <p>{{ post.description }}</p>
+            </div>
+            
+            <hr class="my-4">
+            
+            <a href="{{ url_for('main.realisations') }}" class="btn btn-secondary">Retour aux réalisations</a>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Votre Panier - La Ferme Ousfa{% endblock %}
+
+{% block content %}
+    <h1 class="mb-4">Votre Panier</h1>
+
+    {% if cart_items %}
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Produit</th>
+                    <th scope="col">Prix Unitaire</th>
+                    <th scope="col">Quantité</th>
+                    <th scope="col">Total</th>
+                    <th scope="col">Réservation</th> {# NOUVELLE COLONNE #}
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                    <tr>
+                        <td>
+                            <img src="{{ url_for('static', filename='images/' + item.product.image_file) }}" alt="{{ item.product.name }}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px;">
+                            {{ item.product.name }}
+                        </td>
+                        <td>{{ "{:,.2f}".format(item.product.price) }} FCFA</td>
+                        <td>
+                            <form action="{{ url_for('cart.update_cart') }}" method="POST" class="d-flex">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                                <input type="number" name="quantity" value="{{ item.quantity }}" min="0" class="form-control form-control-sm me-2" style="width: 80px;">
+                                <input type="hidden" name="action" value="set">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Mettre à jour</button>
+                            </form>
+                        </td>
+                        <td>{{ "{:,.2f}".format(item.item_total) }} FCFA</td>
+                        <td>
+                            {# Affichage du temps de réservation #}
+                            {% if item.reserved_until %}
+                                <span class="reservation-timer" data-reserved-until="{{ item.reserved_until.isoformat() }}"></span>
+                            {% else %}
+                                Non réservé
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form action="{{ url_for('cart.update_cart') }}" method="POST">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                <input type="hidden" name="product_id" value="{{ item.product.id }}">
+                                <input type="hidden" name="action" value="remove">
+                                <button type="submit" class="btn btn-sm btn-danger">Supprimer</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4" class="text-end"><strong>Total du Panier :</strong></td> {# COLSPAN MIS À JOUR #}
+                    <td><strong>{{ "{:,.2f}".format(total_price) }} FCFA</strong></td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{{ url_for('products.produits') }}" class="btn btn-secondary">Continuer mes achats</a>
+            <a href="{{ url_for('cart.checkout') }}" class="btn btn-primary">Passer la commande</a>
+        </div>
+
+        {# Section pour les recommandations de produits #}
+        {% if recommended_products %}
+            <h2 class="mt-5 mb-3">Produits Recommandés</h2>
+            <div class="row">
+                {% for product in recommended_products %}
+                    <div class="col-md-3 mb-4">
+                        <div class="card h-100">
+                            <img src="{{ url_for('static', filename='images/' + product.image_file) }}" class="card-img-top" alt="{{ product.name }}" style="height: 180px; object-fit: cover;">
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">{{ product.name }}</h5>
+                                <p class="card-text">{{ "{:,.2f}".format(product.price) }} FCFA</p>
+                                <div class="mt-auto">
+                                    <a href="{{ url_for('products.product_detail', product_id=product.id) }}" class="btn btn-sm btn-info">Voir Détails</a>
+                                    <form action="{{ url_for('cart.add_to_cart') }}" method="POST" class="d-inline">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <button type="submit" class="btn btn-sm btn-success">Ajouter au Panier</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            Votre panier est vide. <a href="{{ url_for('products.produits') }}">Commencez vos achats ici !</a>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function updateCountdown() {
+                const timers = document.querySelectorAll('.reservation-timer');
+                timers.forEach(timer => {
+                    const reservedUntilStr = timer.dataset.reservedUntil;
+                    if (!reservedUntilStr) return;
+
+                    const reservedUntil = new Date(reservedUntilStr);
+                    const now = new Date();
+                    const timeLeft = reservedUntil.getTime() - now.getTime(); // Temps restant en millisecondes
+
+                    if (timeLeft <= 0) {
+                        timer.textContent = 'Expiré';
+                        timer.style.color = 'red';
+                    } else {
+                        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+                        timer.textContent = `${minutes}m ${seconds}s`;
+                        timer.style.color = 'green';
+                    }
+                });
+            }
+
+            // Mettre à jour le compte à rebours toutes les secondes
+            setInterval(updateCountdown, 1000);
+            updateCountdown(); // Appel initial pour afficher immédiatement
+        });
+    </script>
+{% endblock %}
