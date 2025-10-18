@@ -207,6 +207,17 @@ def create_app(config_overrides=None):
         from .wishlist import wishlist as wishlist_blueprint
         app.register_blueprint(wishlist_blueprint, url_prefix='/wishlist')
 
+        from flask import url_for
+
+        @app.template_filter('image_url')
+        def image_url_filter(image_file_value):
+            if image_file_value and 'cloudinary' in image_file_value:
+                return image_file_value
+            else:
+                # Utilise un nom de fichier par défaut si la valeur est vide
+                filename = 'images/' + (image_file_value or 'default.jpg')
+                return url_for('static', filename=filename)
+
         @app.template_filter('format_price')
         def format_price_filter(value):
             return "{:,.2f} FCFA".format(value)
