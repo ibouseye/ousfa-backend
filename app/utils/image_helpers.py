@@ -3,6 +3,8 @@ import filetype
 import uuid
 from werkzeug.utils import secure_filename
 from PIL import Image
+import cloudinary
+import cloudinary.uploader
 
 def allowed_file(file, allowed_extensions):
     """Vérifie si le fichier a une extension autorisée et un type MIME d'image."""
@@ -24,18 +26,20 @@ def allowed_file(file, allowed_extensions):
 
     return kind.mime.startswith('image/')
 
-def save_image(file, upload_folder, image_size=(400, 400)):
-    """Traite et sauvegarde une image uploadée avec un nom de fichier unique."""
+def save_image(file, upload_folder=None, image_size=(400, 400)):
+    """Traite et sauvegarde une image uploadée sur Cloudinary avec un nom de fichier unique."""
+    # Générer un nom de fichier unique pour Cloudinary
     filename = secure_filename(file.filename)
     ext = filename.rsplit('.', 1)[1].lower()
-    unique_filename = f"{uuid.uuid4()}.{ext}"
-    filepath = os.path.join(upload_folder, unique_filename)
+    public_id = f"{uuid.uuid4()}"
 
-    img = Image.open(file)
-    img.thumbnail(image_size)
-
-    if img.mode == 'RGBA':
-        img = img.convert('RGB')
-
-    img.save(filepath)
-    return unique_filename
+    # Envoyer le fichier à Cloudinary
+    # Le fichier doit être un objet de type fichier (file-like object)
+    # Cloudinary peut lire directement depuis file.stream
+    upload_result = cloudinary.uploader.upload(file.stream, 
+                                                public_id=public_id, 
+                                                folder="ousfa_ecommerce", # Dossier sur Cloudinary
+                                                resource_type="image")
+    
+    # Retourner l'URL sécurisée de l'image sur Cloudinary
+    return upload_result['secure_url']
