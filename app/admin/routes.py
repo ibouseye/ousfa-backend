@@ -7,7 +7,7 @@ from ..models import (Product, Category, ContactMessage, StaffUser, Order, Order
                      ProductImage, Post, PageContent, Banner, Milestone, Newsletter, NewsletterSubscriber)
 from ..forms import (CategoryForm, ProductForm, DeleteForm, StaffUserEditForm, 
                    ContactMessageEditForm, ReplyForm, CustomerEditForm, StaffRegistrationForm, PostForm, PageContentForm, BannerForm, MilestoneForm, NewsletterCreationForm, SendForm)
-from ..utils.image_helpers import save_image, allowed_file
+from ..utils.image_helpers import save_image, allowed_file, delete_image
 from openpyxl import Workbook
 from io import BytesIO
 from functools import wraps
@@ -215,12 +215,8 @@ def edit_post(post_id):
         
         if form.cover_image.data and isinstance(form.cover_image.data, FileStorage):
             try:
-                # Supprimer l'ancienne image si elle existe et n'est pas l'image par défaut
-                if post.cover_image and post.cover_image != 'default_post.jpg':
-                    try:
-                        os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], post.cover_image))
-                    except OSError:
-                        pass # Ignorer si l'image n'existe pas sur le disque
+                if post.cover_image and 'cloudinary' in post.cover_image:
+                    delete_image(post.cover_image)
                 
                 filename = save_image(form.cover_image.data, current_app.config['UPLOAD_FOLDER'])
                 post.cover_image = filename
@@ -733,6 +729,10 @@ def reorder_images(product_id):
 def delete_image(image_id):
     image_to_delete = db.session.get(ProductImage, image_id) or abort(404)
     product_id = image_to_delete.product_id
+    
+    # Supprimer de Cloudinary
+    if image_to_delete.image_file and 'cloudinary' in image_to_delete.image_file:
+        delete_image(image_to_delete.image_file)
     try:
         db.session.delete(image_to_delete)
         db.session.commit()
@@ -746,6 +746,9 @@ def delete_image(image_id):
 @admin_required
 def delete_product(product_id):
     product_to_delete = db.session.get(Product, product_id) or abort(404)
+    # Supprimer toutes les images associées de Cloudinary
+    for img in product_to_delete.images:
+        delete_image(img.image_file)
     try:
         db.session.delete(product_to_delete)
         db.session.commit()
@@ -845,13 +848,8 @@ def export_customers_excel():
 def delete_post(post_id):
     post_to_delete = db.session.get(Post, post_id) or abort(404)
     
-    # Supprimer l'image de couverture associée s'il y en a une
-    if post_to_delete.cover_image and post_to_delete.cover_image != 'default_post.jpg':
-        try:
-            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], post_to_delete.cover_image))
-        except OSError:
-            # Non-bloquant si l'image n'est pas trouvée
-            pass
+    if post_to_delete.cover_image and 'cloudinary' in post_to_delete.cover_image:
+        delete_image(post_to_delete.cover_image)
 
     try:
         db.session.delete(post_to_delete)
@@ -885,12 +883,8 @@ def edit_page(page_name):
         
         if form.image_file.data and isinstance(form.image_file.data, FileStorage):
             try:
-                # Supprime l'ancienne image si elle existe
-                if content.image_file:
-                    try:
-                        os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], content.image_file))
-                    except OSError:
-                        pass # Ignore si le fichier n'est pas trouvé
+                if content.image_file and 'cloudinary' in content.image_file:
+                    delete_image(content.image_file)
                 
                 filename = save_image(form.image_file.data, current_app.config['UPLOAD_FOLDER'])
                 content.image_file = filename
@@ -972,11 +966,8 @@ def edit_banner(banner_id):
 
         if form.image.data and isinstance(form.image.data, FileStorage):
             try:
-                if banner.image_file and banner.image_file != 'default_banner.jpg':
-                    try:
-                        os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], banner.image_file))
-                    except OSError:
-                        pass
+                if banner.image_file and 'cloudinary' in banner.image_file:
+                    delete_image(banner.image_file)
                 filename = save_image(form.image.data, current_app.config['UPLOAD_FOLDER'])
                 banner.image_file = filename
             except Exception as e:
@@ -992,11 +983,8 @@ def edit_banner(banner_id):
 @admin_required
 def delete_banner(banner_id):
     banner_to_delete = db.session.get(Banner, banner_id) or abort(404)
-    if banner_to_delete.image_file and banner_to_delete.image_file != 'default_banner.jpg':
-        try:
-            os.remove(os.path.join(current_app.config['UPLOAD_FOLDER'], banner_to_delete.image_file))
-        except OSError:
-            pass
+    if banner_to_delete.image_file and 'cloudinary' in banner_to_delete.image_file:
+        delete_image(banner_to_delete.image_file)
     
     try:
         db.session.delete(banner_to_delete)
