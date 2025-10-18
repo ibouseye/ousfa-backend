@@ -7,7 +7,7 @@ from ..models import (Product, Category, ContactMessage, StaffUser, Order, Order
                      ProductImage, Post, PageContent, Banner, Milestone, Newsletter, NewsletterSubscriber)
 from ..forms import (CategoryForm, ProductForm, DeleteForm, StaffUserEditForm, 
                    ContactMessageEditForm, ReplyForm, CustomerEditForm, StaffRegistrationForm, PostForm, PageContentForm, BannerForm, MilestoneForm, NewsletterCreationForm, SendForm)
-from ..utils.image_helpers import save_image, allowed_file, delete_image
+from ..utils.image_helpers import save_image, allowed_file, delete_image_from_cloudinary
 from openpyxl import Workbook
 from io import BytesIO
 from functools import wraps
@@ -216,7 +216,7 @@ def edit_post(post_id):
         if form.cover_image.data and isinstance(form.cover_image.data, FileStorage):
             try:
                 if post.cover_image and 'cloudinary' in post.cover_image:
-                    delete_image(post.cover_image)
+                    delete_image_from_cloudinary(post.cover_image)
                 
                 filename = save_image(form.cover_image.data, current_app.config['UPLOAD_FOLDER'])
                 post.cover_image = filename
@@ -732,7 +732,7 @@ def delete_image(image_id):
     
     # Supprimer de Cloudinary
     if image_to_delete.image_file and 'cloudinary' in image_to_delete.image_file:
-        delete_image(image_to_delete.image_file)
+        delete_image_from_cloudinary(image_to_delete.image_file)
     try:
         db.session.delete(image_to_delete)
         db.session.commit()
@@ -748,7 +748,7 @@ def delete_product(product_id):
     product_to_delete = db.session.get(Product, product_id) or abort(404)
     # Supprimer toutes les images associées de Cloudinary
     for img in product_to_delete.images:
-        delete_image(img.image_file)
+        delete_image_from_cloudinary(img.image_file)
     try:
         db.session.delete(product_to_delete)
         db.session.commit()
@@ -849,7 +849,7 @@ def delete_post(post_id):
     post_to_delete = db.session.get(Post, post_id) or abort(404)
     
     if post_to_delete.cover_image and 'cloudinary' in post_to_delete.cover_image:
-        delete_image(post_to_delete.cover_image)
+        delete_image_from_cloudinary(post_to_delete.cover_image)
 
     try:
         db.session.delete(post_to_delete)
@@ -884,7 +884,7 @@ def edit_page(page_name):
         if form.image_file.data and isinstance(form.image_file.data, FileStorage):
             try:
                 if content.image_file and 'cloudinary' in content.image_file:
-                    delete_image(content.image_file)
+                    delete_image_from_cloudinary(content.image_file)
                 
                 filename = save_image(form.image_file.data, current_app.config['UPLOAD_FOLDER'])
                 content.image_file = filename
@@ -967,7 +967,7 @@ def edit_banner(banner_id):
         if form.image.data and isinstance(form.image.data, FileStorage):
             try:
                 if banner.image_file and 'cloudinary' in banner.image_file:
-                    delete_image(banner.image_file)
+                    delete_image_from_cloudinary(banner.image_file)
                 filename = save_image(form.image.data, current_app.config['UPLOAD_FOLDER'])
                 banner.image_file = filename
             except Exception as e:
@@ -984,7 +984,7 @@ def edit_banner(banner_id):
 def delete_banner(banner_id):
     banner_to_delete = db.session.get(Banner, banner_id) or abort(404)
     if banner_to_delete.image_file and 'cloudinary' in banner_to_delete.image_file:
-        delete_image(banner_to_delete.image_file)
+        delete_image_from_cloudinary(banner_to_delete.image_file)
     
     try:
         db.session.delete(banner_to_delete)

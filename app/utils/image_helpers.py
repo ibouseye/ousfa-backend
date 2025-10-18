@@ -35,7 +35,7 @@ def save_image(file, upload_folder=None, image_size=(400, 400)):
                                                 resource_type="image")
     return upload_result['secure_url']
 
-def delete_image(image_url):
+def delete_image_from_cloudinary(image_url):
     """Supprime une image de Cloudinary en utilisant son URL."""
     if not image_url or 'cloudinary' not in image_url:
         return # Ce n'est pas une URL Cloudinary
