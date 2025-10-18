@@ -59,7 +59,7 @@ class Product(db.Model):
     category_id = db.Column(db.Integer, db.ForeignKey('category.id'), nullable=False)
     category = db.relationship('Category', back_populates='products')
     description = db.Column(db.Text, nullable=True)
-    image_file = db.Column(db.String(60), nullable=True, default='default.jpg')
+    image_file = db.Column(db.String(255), nullable=True, default='default.jpg')
     price = db.Column(db.Float, nullable=False)
     stock = db.Column(db.Integer, nullable=False, default=0)
     min_stock_threshold = db.Column(db.Integer, nullable=False, default=5)
@@ -72,7 +72,7 @@ class Product(db.Model):
 class ProductImage(db.Model):
     __tablename__ = 'product_image'
     id = db.Column(db.Integer, primary_key=True)
-    image_file = db.Column(db.String(60), nullable=False)
+    image_file = db.Column(db.String(255), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     position = db.Column(db.Integer, nullable=False, default=0)
     product = db.relationship('Product', back_populates='images')
@@ -251,7 +251,7 @@ class Banner(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
     message = db.Column(db.Text, nullable=True)
-    image_file = db.Column(db.String(60), nullable=True, default='default_banner.jpg')
+    image_file = db.Column(db.String(255), nullable=True, default='default_banner.jpg')
     link_url = db.Column(db.String(200), nullable=True)
     is_active = db.Column(db.Boolean, default=True)
     start_date = db.Column(db.DateTime, nullable=True)
@@ -289,7 +289,7 @@ class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(120), nullable=False)
     description = db.Column(db.Text, nullable=False)
-    cover_image = db.Column(db.String(60), nullable=True, default='default_post.jpg')
+    cover_image = db.Column(db.String(255), nullable=True, default='default_post.jpg')
     video_url = db.Column(db.String(200), nullable=True)
     created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     author_id = db.Column(db.Integer, db.ForeignKey('staff_user.id'), nullable=False)
@@ -303,7 +303,7 @@ class Post(db.Model):
 class PostImage(db.Model):
     __tablename__ = 'post_image'
     id = db.Column(db.Integer, primary_key=True)
-    image_file = db.Column(db.String(60), nullable=False)
+    image_file = db.Column(db.String(255), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=False)
     post = db.relationship('Post', back_populates='images')
 
@@ -316,7 +316,7 @@ class PageContent(db.Model):
     title = db.Column(db.String(120), nullable=True)
     subtitle = db.Column(db.String(200), nullable=True)
     body = db.Column(db.Text, nullable=True)
-    image_file = db.Column(db.String(60), nullable=True)
+    image_file = db.Column(db.String(255), nullable=True)
 
     def __repr__(self):
         return f'<PageContent {self.page_name}>'
