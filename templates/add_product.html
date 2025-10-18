@@ -57,9 +57,15 @@
                     {% for img in product.images|sort(attribute='position') %}
                         <div class="me-2 mb-2 text-center" data-image-id="{{ img.id }}">
                             <div class="drag-handle" style="cursor: grab; color: #ccc; text-align: center;"><i class="fas fa-grip-vertical"></i></div>
+                            {% if 'cloudinary' in img.image_file %}
+                            <img src="{{ img.image_file }}" 
+                                 alt="Image du produit" 
+                                 style="width: 100px; height: 100px; object-fit: cover; {% if img.image_file == product.image_file %}border: 3px solid #FDEF42;{% endif %}">
+                            {% else %}
                             <img src="{{ url_for('static', filename='images/' + img.image_file) }}" 
                                  alt="Image du produit" 
                                  style="width: 100px; height: 100px; object-fit: cover; {% if img.image_file == product.image_file %}border: 3px solid #FDEF42;{% endif %}">
+                            {% endif %}
                             
                             <div class="mt-1">
                                 <button type="button" 

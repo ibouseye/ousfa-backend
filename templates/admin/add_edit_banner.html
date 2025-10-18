@@ -42,7 +42,13 @@
                         </div>
                     {% endif %}
                     {% if banner and banner.image_file %}
-                        <small class="form-text text-muted">Image actuelle: <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" alt="{{ banner.title }}" style="width: 100px; height: auto;"></small>
+                        <small class="form-text text-muted">Image actuelle: 
+                            {% if 'cloudinary' in banner.image_file %}
+                            <img src="{{ banner.image_file }}" alt="{{ banner.title }}" style="width: 100px; height: auto;">
+                            {% else %}
+                            <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" alt="{{ banner.title }}" style="width: 100px; height: auto;">
+                            {% endif %}
+                        </small>
                     {% endif %}
                 </div>
                 <div class="mb-3">

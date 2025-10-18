@@ -18,7 +18,11 @@
             {% if post and post.cover_image %}
             <div class="mb-3">
                 <p><strong>Image actuelle :</strong></p>
+                {% if 'cloudinary' in post.cover_image %}
+                <img src="{{ post.cover_image }}" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px;">
+                {% else %}
                 <img src="{{ url_for('static', filename='images/' + post.cover_image) }}" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px;">
+                {% endif %}
             </div>
             {% endif %}
 

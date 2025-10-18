@@ -56,7 +56,11 @@
                 <tr class="{% if product.stock <= product.min_stock_threshold %}table-danger{% endif %}">
                     <th scope="row">{{ product.id }}</th>
                     <td>
+                        {% if 'cloudinary' in product.image_file %}
+                        <img src="{{ product.image_file }}" alt="{{ product.name }}" style="width: 50px; height: 50px; object-fit: cover;">
+                        {% else %}
                         <img src="{{ url_for('static', filename='images/' + product.image_file) }}" alt="{{ product.name }}" style="width: 50px; height: 50px; object-fit: cover;">
+                        {% endif %}
                     </td>
                     <td>{{ product.name }}</td>
                     <td>{{ product.category.name }}</td>
