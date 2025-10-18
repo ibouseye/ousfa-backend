@@ -19,7 +19,7 @@
 
             <!-- Post Cover Image (if no video) -->
             {% if not embed_url and post.cover_image %}
-                                    <img src="{{ post.cover_image | image_url }}" class="img-fluid rounded mb-4" alt="{{ post.title }}">
+                                                <img src="{% if post.cover_image and post.cover_image.startswith('http') %}{{ post.cover_image }}{% else %}{{ url_for('static', filename='images/' + post.cover_image) }}{% endif %}" class="img-fluid rounded mb-4" alt="{{ post.title }}">
             {% endif %}
 
             <!-- Post Content -->
