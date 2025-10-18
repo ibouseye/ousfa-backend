@@ -27,6 +27,9 @@ def create_app(config_overrides=None):
     """Crée et configure une instance de l'application Flask."""
     app = Flask(__name__, template_folder=os.path.join(basedir, 'templates'), static_folder=os.path.join(basedir, 'static'))
 
+    import logging
+    logging.basicConfig(level=logging.INFO)
+
     # Configuration de l'application
     app.config.from_mapping(
         SECRET_KEY=os.environ.get('SECRET_KEY'),
