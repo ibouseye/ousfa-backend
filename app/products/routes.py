@@ -38,6 +38,10 @@ def produits():
         products_query = products_query.order_by(Product.name.asc())
 
     products_pagination = db.paginate(products_query, page=page, per_page=9)
+    import logging
+    logger = logging.getLogger(__name__)
+    for product in products_pagination.items:
+        logger.info(f"DEBUG (Produits): Product ID: {product.id}, Image File: {product.image_file}")
     categories = db.session.execute(db.select(Category)).scalars().all()
 
     # Récupérer les bannières pour la page produits
