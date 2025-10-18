@@ -94,7 +94,7 @@
                 <div class="carousel-inner">
                     {% for banner in product_page_banners %}
                     <div class="carousel-item {% if loop.first %}active{% endif %}">
-                        <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" class="d-block w-100" alt="{{ banner.title }}" style="max-height: 200px; object-fit: contain;">
+                                                <img src="{% if banner.image_file and 'cloudinary' in banner.image_file %}{{ banner.image_file }}{% else %}{{ url_for('static', filename='images/' + banner.image_file) }}{% endif %}" class="d-block w-100" alt="{{ banner.title }}" style="max-height: 200px; object-fit: contain;">
                         <div class="carousel-caption d-none d-md-block" style="background-color: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;">
                             <h5>{{ banner.title }}</h5>
                             <p>{{ banner.message }}</p>
@@ -121,15 +121,15 @@
 <div class="row">
     <div class="col-md-6" id="lightgallery">
         <!-- Image principale -->
-        <a href="{{ url_for('static', filename='images/' + product.image_file) }}">
-            <img id="mainProductImage" src="{{ url_for('static', filename='images/' + product.image_file) }}" class="img-fluid rounded mb-3" alt="{{ product.name }}">
+        <a href="{% if product.image_file and 'cloudinary' in product.image_file %}{{ product.image_file }}{% else %}{{ url_for('static', filename='images/' + product.image_file) }}{% endif %}">
+            <img id="mainProductImage" src="{% if product.image_file and 'cloudinary' in product.image_file %}{{ product.image_file }}{% else %}{{ url_for('static', filename='images/' + product.image_file) }}{% endif %}" class="img-fluid rounded mb-3" alt="{{ product.name }}">
         </a>
         
         <!-- Miniatures des images -->
         <div class="d-flex flex-wrap mb-4">
             {% for img in product.images %}
-                <a href="{{ url_for('static', filename='images/' + img.image_file) }}" class="me-2 mb-2">
-                    <img src="{{ url_for('static', filename='images/' + img.image_file) }}" class="img-thumbnail" alt="{{ product.name }}" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;">
+                <a href="{% if img.image_file and 'cloudinary' in img.image_file %}{{ img.image_file }}{% else %}{{ url_for('static', filename='images/' + img.image_file) }}{% endif %}" class="me-2 mb-2">
+                    <img src="{% if img.image_file and 'cloudinary' in img.image_file %}{{ img.image_file }}{% else %}{{ url_for('static', filename='images/' + img.image_file) }}{% endif %}" class="img-thumbnail" alt="{{ product.name }}" style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;">
                 </a>
             {% endfor %}
         </div>

@@ -19,7 +19,7 @@
 
             <!-- Post Cover Image (if no video) -->
             {% if not embed_url and post.cover_image %}
-            <img src="{{ url_for('static', filename='images/' + post.cover_image) }}" class="img-fluid rounded mb-4" alt="{{ post.title }}">
+                        <img src="{% if post.cover_image and 'cloudinary' in post.cover_image %}{{ post.cover_image }}{% else %}{{ url_for('static', filename='images/' + post.cover_image) }}{% endif %}" class="img-fluid rounded mb-4" alt="{{ post.title }}">
             {% endif %}
 
             <!-- Post Content -->

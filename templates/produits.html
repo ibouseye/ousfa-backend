@@ -21,7 +21,7 @@
                 <div class="carousel-inner">
                     {% for banner in product_page_banners %}
                     <div class="carousel-item {% if loop.first %}active{% endif %}>
-                        <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" class="d-block w-100" alt="{{ banner.title }}" style="max-height: 200px; object-fit: contain;">
+                                                <img src="{% if banner.image_file and 'cloudinary' in banner.image_file %}{{ banner.image_file }}{% else %}{{ url_for('static', filename='images/' + banner.image_file) }}{% endif %}" class="d-block w-100" alt="{{ banner.title }}" style="max-height: 200px; object-fit: contain;">
                         <div class="carousel-caption d-none d-md-block" style="background-color: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;">
                             <h5>{{ banner.title }}</h5>
                             <p>{{ banner.message }}</p>
@@ -54,7 +54,7 @@
                     {% for banner in sidebar_banners %}
                         <div class="mb-3">
                             {% if banner.image_file %}
-                                <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" class="img-fluid rounded" alt="{{ banner.title }}">
+                                                                <img src="{% if banner.image_file and 'cloudinary' in banner.image_file %}{{ banner.image_file }}{% else %}{{ url_for('static', filename='images/' + banner.image_file) }}{% endif %}" class="img-fluid rounded" alt="{{ banner.title }}">
                             {% endif %}
                             <h5 class="card-title mt-2">{{ banner.title }}</h5>
                             <p class="card-text">{{ banner.message }}</p>
@@ -110,7 +110,7 @@
             <div class="card h-100">
                         {# L'image du produit. On utilise url_for pour générer le chemin vers le dossier static. #}
                         <div style="aspect-ratio: 1 / 1; overflow: hidden;">
-                            <img src="{{ url_for('static', filename='images/' + product.image_file) }}" class="card-img-top" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover; object-position: center top;">
+                                                        <img src="{% if product.image_file and 'cloudinary' in product.image_file %}{{ product.image_file }}{% else %}{{ url_for('static', filename='images/' + (product.image_file or 'default.jpg')) }}{% endif %}" class="card-img-top" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover; object-position: center top;">
                         </div>
                         <div class="card-body">
                             <h5 class="card-title">{{ product.name }}</h5>
