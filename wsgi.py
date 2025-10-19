@@ -1,3 +1,9 @@
+# Monkey-patch for collections.Mapping import error in old libraries
+import collections
+if not hasattr(collections, 'Mapping'):
+    import collections.abc
+    collections.Mapping = collections.abc.Mapping
+
 from app import create_app
 from waitress import serve
 
