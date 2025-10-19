@@ -218,7 +218,7 @@
             {% if banner.position == 'top' %}
                 <div class="top-banner text-center py-2" style="background-color: #FDEF42; color: #333; font-weight: bold; z-index: 1030;">
                     {% if banner.image_file %}
-                        <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" alt="{{ banner.title }}" style="max-height: 30px; margin-right: 10px; vertical-align: middle;">
+                        <img src="{{ banner.image_file | image_url }}" alt="{{ banner.title }}" style="max-height: 30px; margin-right: 10px; vertical-align: middle;">
                     {% endif %}
                     <span>{{ banner.title }} - {{ banner.message }}</span>
                     {% if banner.link_url %}

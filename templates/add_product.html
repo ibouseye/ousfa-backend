@@ -62,7 +62,7 @@
                                  alt="Image du produit" 
                                  style="width: 100px; height: 100px; object-fit: cover; {% if img.image_file == product.image_file %}border: 3px solid #FDEF42;{% endif %}">
                             {% else %}
-                            <img src="{{ url_for('static', filename='images/' + img.image_file) }}" 
+                            <img src="{{ img.image_file | image_url }}" 
                                  alt="Image du produit" 
                                  style="width: 100px; height: 100px; object-fit: cover; {% if img.image_file == product.image_file %}border: 3px solid #FDEF42;{% endif %}">
                             {% endif %}

@@ -11,7 +11,7 @@
                 {% for item in wishlist_items %}
                 <div class="list-group-item d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center">
-                        <img src="{{ url_for('static', filename='images/' + item.product.image_file) }}" alt="{{ item.product.name }}" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                        <img src="{{ item.product.image_file | image_url }}" alt="{{ item.product.name }}" class="img-thumbnail me-3" style="width: 80px; height: 80px; object-fit: cover;">
                         <div>
                             <h5 class="mb-1">{{ item.product.name }}</h5>
                             <p class="mb-1 text-muted">{{ item.product.price | format_price }}</p>

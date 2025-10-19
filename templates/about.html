@@ -29,14 +29,14 @@
                         {% else %}
                         <div class="col-md-6 col-lg-4">
                         {% endif %}
-                            <img src="{{ url_for('static', filename='images/' + image.image_file) }}" class="img-fluid rounded shadow-sm" alt="Image de la page Qui sommes-nous">
+                            <img src="{{ image.image_file | image_url }}" class="img-fluid rounded shadow-sm" alt="Image de la page Qui sommes-nous">
                         </div>
                     {% endfor %}
 
                 {# Cas 2: On n'a pas de liste, mais on a l'ancienne image unique (fallback) #}
                 {% elif content.image_file %}
                     <div style="text-align: center; margin-top: 2rem; margin-bottom: 2rem;">
-                        <img src="{{ url_for('static', filename='images/' + content.image_file) }}" style="width: 90%; max-width: 900px; margin: auto; display: block; border-radius: 0.375rem; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);" alt="Image de la page Qui sommes-nous">
+                        <img src="{{ content.image_file | image_url }}" style="width: 90%; max-width: 900px; margin: auto; display: block; border-radius: 0.375rem; box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);" alt="Image de la page Qui sommes-nous">
                     </div>
                 {% endif %}
 

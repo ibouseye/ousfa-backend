@@ -28,7 +28,7 @@
                 {% if 'cloudinary' in content.image_file %}
                 <img src="{{ content.image_file }}" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px;">
                 {% else %}
-                <img src="{{ url_for('static', filename='images/' + content.image_file) }}" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px;">
+                <img src="{{ content.image_file | image_url }}" alt="Image actuelle" class="img-thumbnail" style="max-width: 200px;">
                 {% endif %}
             </div>
             {% endif %}

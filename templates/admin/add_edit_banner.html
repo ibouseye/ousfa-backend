@@ -46,7 +46,7 @@
                             {% if 'cloudinary' in banner.image_file %}
                             <img src="{{ banner.image_file }}" alt="{{ banner.title }}" style="width: 100px; height: auto;">
                             {% else %}
-                            <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" alt="{{ banner.title }}" style="width: 100px; height: auto;">
+                            <img src="{{ banner.image_file | image_url }}" alt="{{ banner.title }}" style="width: 100px; height: auto;">
                             {% endif %}
                         </small>
                     {% endif %}

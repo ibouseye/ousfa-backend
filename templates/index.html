@@ -27,7 +27,7 @@
             <div class="carousel-inner">
                 {% for banner in homepage_banners %}
                 <div class="carousel-item {% if loop.first %}active{% endif %}">
-                    <img src="{{ url_for('static', filename='images/' + banner.image_file) }}" class="d-block w-100" alt="{{ banner.title }}" style="max-height: 200px; object-fit: contain;">
+                    <img src="{{ banner.image_file | image_url }}" class="d-block w-100" alt="{{ banner.title }}" style="max-height: 200px; object-fit: contain;">
                     <div class="carousel-caption d-none d-md-block" style="background-color: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;">
                         <h5>{{ banner.title }}</h5>
                         <p>{{ banner.message }}</p>
@@ -70,7 +70,7 @@
         {% for product in latest_products %}
         <div class="col">
             <div class="card h-100">
-                <img src="{{ url_for('static', filename='images/' + product.image_file) }}" class="card-img-top" alt="{{ product.name }}">
+                <img src="{{ product.image_file | image_url }}" class="card-img-top" alt="{{ product.name }}">
                 <div class="card-body">
                     <h5 class="card-title">{{ product.name }}</h5>
                     <h6 class="card-subtitle mb-2 text-muted">{{ product.category.name }}</h6>
