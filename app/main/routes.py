@@ -1,7 +1,11 @@
-from flask import render_template, request, flash, redirect, url_for
+from flask import render_template, request, flash, redirect, url_for, current_app, send_from_directory
 from datetime import datetime
 from flask_login import login_required, current_user
 from . import main
+
+@main.route('/googlee542c84b56ccc46f.html')
+def google_verification():
+    return send_from_directory(current_app.static_folder, 'googlee542c84b56ccc46f.html')
 from .. import db
 from ..models import Product, ContactMessage, Order, Customer, StaffUser, Post, PageContent, Banner, NewsletterSubscriber
 from ..forms import ContactForm, ProfileForm, NewsletterForm
