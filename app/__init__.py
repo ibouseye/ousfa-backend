@@ -50,6 +50,7 @@ def create_app(config_overrides=None):
         STRIPE_ENDPOINT_SECRET=os.environ.get('STRIPE_ENDPOINT_SECRET'),
         ENABLE_ORANGE_MONEY=os.environ.get('ENABLE_ORANGE_MONEY') == '1',
         ENABLE_WAVE_MONEY=os.environ.get('ENABLE_WAVE_MONEY') == '1',
+        SITEMAP_URL_SCHEME='https',
     )
 
     if config_overrides:
