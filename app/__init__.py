@@ -27,8 +27,7 @@ def create_app(config_overrides=None):
     """Crée et configure une instance de l'application Flask."""
     app = Flask(__name__, template_folder=os.path.join(basedir, 'templates'), static_folder=os.path.join(basedir, 'static'))
 
-    import logging
-    logging.basicConfig(level=logging.INFO)
+    app = Flask(__name__, template_folder=os.path.join(basedir, 'templates'), static_folder=os.path.join(basedir, 'static'))
 
     # Configuration de l'application
     app.config.from_mapping(
@@ -56,6 +55,10 @@ def create_app(config_overrides=None):
     if config_overrides:
         app.config.update(config_overrides)
 
+    # Désactiver le cache Jinja2 en mode debug pour s'assurer que les modifications de template sont prises en compte
+    if app.debug:
+        app.jinja_env.cache = None
+
     # Initialiser les extensions avec l'application
     db.init_app(app)
     bcrypt.init_app(app)
@@ -65,6 +68,14 @@ def create_app(config_overrides=None):
     csrf.init_app(app)
     migrate.init_app(app, db)
     assets.init_app(app)
+
+    # Configuration explicite de Cloudinary
+    import cloudinary
+    cloudinary.config(
+        cloud_name=os.environ.get('CLOUDINARY_CLOUD_NAME'),
+        api_key=os.environ.get('CLOUDINARY_API_KEY'),
+        api_secret=os.environ.get('CLOUDINARY_API_SECRET')
+    )
     if app.config["TESTING"]:
         Talisman(app, force_https=False)
     else:
@@ -85,6 +96,7 @@ def create_app(config_overrides=None):
                     'https://cdn.jsdelivr.net'
                 ],
                 'font-src': ["'self'", 'https://cdnjs.cloudflare.com'],
+                'img-src': ["'self'", 'https://res.cloudinary.com', 'data:'], # Ajout de Cloudinary et data: pour les images encodées en base64
                 'frame-src': ["'self'", 'https://www.youtube.com']
             }
         )
