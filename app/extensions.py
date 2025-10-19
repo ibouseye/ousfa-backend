@@ -6,6 +6,7 @@ from flask_moment import Moment
 from flask_wtf.csrf import CSRFProtect
 from flask_migrate import Migrate
 from flask_assets import Environment
+from flask_sitemap import Sitemap
 
 db = SQLAlchemy()
 bcrypt = Bcrypt()
@@ -15,3 +16,4 @@ moment = Moment()
 csrf = CSRFProtect()
 migrate = Migrate()
 assets = Environment()
+sitemap = Sitemap()

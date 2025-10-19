@@ -80,3 +80,4 @@ zipp==3.19.2
 whitenoise
 psycopg2-binary
 cloudinary
+Flask-Sitemap==0.3.0

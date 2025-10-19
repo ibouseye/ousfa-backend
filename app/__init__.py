@@ -14,7 +14,7 @@ from whitenoise import WhiteNoise
 basedir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 load_dotenv(dotenv_path=os.path.join(basedir, '.env'))
 
-from .extensions import db, bcrypt, login_manager, mail, moment, csrf, migrate, assets
+from .extensions import db, bcrypt, login_manager, mail, moment, csrf, migrate, assets, sitemap
 
 # Configuration du LoginManager
 login_manager.login_view = 'auth.login'
@@ -68,6 +68,7 @@ def create_app(config_overrides=None):
     csrf.init_app(app)
     migrate.init_app(app, db)
     assets.init_app(app)
+    sitemap.init_app(app)
 
     # Configuration explicite de Cloudinary
     import cloudinary

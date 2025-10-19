@@ -140,3 +140,42 @@ def dynamic_page(page_name):
         flash("Page non trouvée.", "danger")
         return redirect(url_for('main.index'))
     return render_template('dynamic_page.html', content=content)
+
+# --- Sitemap Generation ---
+from ..extensions import sitemap
+
+@sitemap.register_generator
+def static_urls():
+    """Generator for static page URLs."""
+    yield 'main.index', {}
+    yield 'main.contact', {}
+    yield 'main.realisations', {}
+    yield 'products.produits', {}
+
+@sitemap.register_generator
+def product_urls():
+    """Generator for product detail page URLs."""
+    products = db.session.execute(db.select(Product)).scalars().all()
+    for product in products:
+        yield 'products.product_detail', {'product_id': product.id}
+
+@sitemap.register_generator
+def post_urls():
+    """Generator for post detail page URLs."""
+    posts = db.session.execute(db.select(Post)).scalars().all()
+    for post in posts:
+        yield 'main.post_detail', {'post_id': post.id}
+
+@sitemap.register_generator
+def dynamic_page_urls():
+    """Generator for dynamic page URLs."""
+    pages = db.session.execute(db.select(PageContent)).scalars().all()
+    for page in pages:
+        yield 'main.dynamic_page', {'page_name': page.page_name}
+
+@main.route('/sitemap.xml')
+def sitemap_xml():
+    """Route to generate and serve the sitemap.xml file."""
+    response = sitemap.generate()
+    response.headers['Content-Type'] = 'application/xml'
+    return response
