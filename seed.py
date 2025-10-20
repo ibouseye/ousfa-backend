@@ -1,79 +1,106 @@
-# -*- coding: utf-8 -*-
+'''
+Ce script fournit des commandes CLI pour peupler et réinitialiser la base de données.
+'''
+import click
+from flask.cli import with_appcontext
+from .extensions import db
+from .models import (
+    Product, Category, StaffUser, Customer, Order, OrderItem,
+    ContactMessage, PageVisit, Banner, Post, PostImage, ProductImage,
+    Review, ReviewVote, WishlistItem, CartItem, SmartShopping,
+    SmartShoppingReservation, PageContent, Milestone, NewsletterSubscriber, Newsletter
+)
 
-# Ce script est un "seeder", il sert à peupler notre base de données avec des données initiales.
-# C'est très pratique pour tester l'application sans avoir à tout rentrer à la main.
+# Création d'un groupe de commandes 'seed'
+@click.group()
+def seed():
+    """Commandes pour la gestion des données de la base."""
+    pass
 
-# On importe la fonction create_app et l'objet db
-from app import create_app, db
-from app.models import Product, Category
+@seed.command()
+@with_appcontext
+def populate():
+    """Peuple la base de données avec des données initiales."""
+    click.echo("Création des catégories et produits de base...")
 
-# On crée une instance de l'application
-app = create_app()
+    # --- Création des catégories ---
+    cat_volaille = Category.query.filter_by(name='Volaille').first()
+    if not cat_volaille:
+        cat_volaille = Category(name='Volaille')
+        db.session.add(cat_volaille)
 
-# --- Le script de peuplement ---
-
-# On s'assure que ce script s'exécute dans le bon "contexte" d'application Flask.
-# C'est nécessaire pour que SQLAlchemy sache à quelle base de données se connecter.
-with app.app_context():
-    print("Suppression des anciens produits et catégories...")
-    # Pour éviter les doublons à chaque exécution, on supprime tous les produits et catégories existants.
-    Product.query.delete()
-    Category.query.delete()
+    cat_maraichage = Category.query.filter_by(name='Maraîchage').first()
+    if not cat_maraichage:
+        cat_maraichage = Category(name='Maraîchage')
+        db.session.add(cat_maraichage)
+    
     db.session.commit()
 
-    print("Création des nouvelles catégories...")
-    cat_volaille = Category(name='Volaille')
-    cat_maraichage = Category(name='Maraîchage')
-    db.session.add(cat_volaille)
-    db.session.add(cat_maraichage)
+    # --- Création des produits ---
+    products_to_add = {
+        'Poulet de chair': {'category': cat_volaille, 'description': 'Élevé en plein air, tendre et savoureux.', 'price': 5000, 'image_file': 'poulet.jpg', 'stock': 50},
+        'Pintade': {'category': cat_volaille, 'description': 'Viande fine et goûteuse.', 'price': 7000, 'image_file': 'pintade.jpg', 'stock': 30},
+        'Oeufs de poule': {'category': cat_volaille, 'description': 'Oeufs frais du jour.', 'price': 1500, 'image_file': 'oeufs.jpg', 'stock': 100},
+        'Tomate': {'category': cat_maraichage, 'description': 'Cultivées en plein champ.', 'price': 1000, 'image_file': 'tomate.jpg', 'stock': 200},
+        'Oignon vert': {'category': cat_maraichage, 'description': 'Idéal pour relever vos plats.', 'price': 500, 'image_file': 'oignon.jpg', 'stock': 150}
+    }
+
+    for name, data in products_to_add.items():
+        if not Product.query.filter_by(name=name).first():
+            product = Product(name=name, **data)
+            db.session.add(product)
+
     db.session.commit()
+    click.echo("Peuplement de base terminé.")
 
-    print("Création des nouveaux produits...")
-    # On crée une liste d'objets Product
-    products = [
-        Product(
-            name='Poulet de chair',
-            category=cat_volaille,
-            description='Élevé en plein air, notre poulet de chair est tendre et savoureux.',
-            price=5000,
-            image_file='poulet.jpg'
-        ),
-        Product(
-            name='Pintade',
-            category=cat_volaille,
-            description='Une viande fine et goûteuse, parfaite pour les repas de fête.',
-            price=7000,
-            image_file='pintade.jpg'
-        ),
-        Product(
-            name='Oeufs de poule',
-            category=cat_volaille,
-            description='Des oeufs frais du jour, au jaune riche et crémeux.',
-            price=1500,
-            image_file='oeufs.jpg'
-        ),
-        Product(
-            name='Tomate',
-            category=cat_maraichage,
-            description='Nos tomates sont cultivées en plein champ et cueillies à maturité.',
-            price=1000,
-            image_file='tomate.jpg'
-        ),
-        Product(
-            name='Oignon vert',
-            category=cat_maraichage,
-            description='Idéal pour relever vos salades et plats cuisinés.',
-            price=500,
-            image_file='oignon.jpg'
-        )
-    ]
+@seed.command()
+@with_appcontext
+def reset():
+    """Supprime TOUTES les données de toutes les tables, puis repeuple."""
+    if not click.confirm(click.style('ATTENTION ! Ceci va supprimer TOUTES les données. Voulez-vous continuer ?', fg='red', bold=True)):
+        return
 
-    # On ajoute tous les produits de notre liste à la "session" de la base de données.
-    # La session est une zone de transit avant l'écriture finale.
-    db.session.add_all(products)
+    click.echo("Suppression de toutes les données...")
 
-    # On valide la transaction. C'est à ce moment que les données sont réellement écrites
-    # dans le fichier site.db.
+    # Désactiver temporairement les contraintes de clé étrangère (plus sûr et plus rapide)
+    # Note: La syntaxe peut varier selon le SGBD (SQLite, PostgreSQL, MySQL)
+    engine_name = db.engine.name
+    if engine_name == 'mysql':
+        db.session.execute('SET FOREIGN_KEY_CHECKS=0;')
+    elif engine_name == 'postgresql':
+        # Pour PostgreSQL, on pourrait utiliser TRUNCATE ... CASCADE, mais c'est plus complexe à gérer ici.
+        # On va donc se fier à l'ordre de suppression manuel.
+        pass
+
+    # Suppression manuelle dans l'ordre inverse des dépendances
+    for table in reversed(db.metadata.sorted_tables):
+        db.session.execute(table.delete())
+
+    if engine_name == 'mysql':
+        db.session.execute('SET FOREIGN_KEY_CHECKS=1;')
+
     db.session.commit()
+    click.echo(click.style("Toutes les données ont été supprimées.", fg='green'))
 
-    print("Les produits ont été ajoutés avec succès !")
+    # On rappelle la commande de peuplement
+    populate.callback()
+
+@seed.command(name='full-reset')
+@with_appcontext
+def full_reset():
+    """Supprime TOUTES les tables et les recrée (le plus radical)."""
+    if not click.confirm(click.style('ATTENTION ! Ceci va supprimer TOUTES les tables et données. Voulez-vous continuer ?', fg='red', bold=True)):
+        return
+
+    click.echo("Suppression de toutes les tables de la base de données...")
+    db.drop_all()
+    db.session.commit()
+    click.echo(click.style("Tables supprimées.", fg='green'))
+
+    click.echo("Création de toutes les tables...")
+    db.create_all()
+    db.session.commit()
+    click.echo(click.style("Tables créées.", fg='green'))
+
+    # On rappelle la commande de peuplement
+    populate.callback()
