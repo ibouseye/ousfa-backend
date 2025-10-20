@@ -3,8 +3,8 @@ Ce script fournit des commandes CLI pour peupler et réinitialiser la base de do
 '''
 import click
 from flask.cli import with_appcontext
-from .extensions import db
-from .models import (
+from app.extensions import db
+from app.models import (
     Product, Category, StaffUser, Customer, Order, OrderItem,
     ContactMessage, PageVisit, Banner, Post, PostImage, ProductImage,
     Review, ReviewVote, WishlistItem, CartItem, SmartShopping,
