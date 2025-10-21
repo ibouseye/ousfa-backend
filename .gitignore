@@ -60,3 +60,7 @@ coverage.xml
 
 # VSCode
 .vscode/
+
+# Generated static assets
+static/.webassets-cache/
+static/gen/

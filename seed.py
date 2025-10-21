@@ -51,7 +51,58 @@ def populate():
             db.session.add(product)
 
     db.session.commit()
-    click.echo("Peuplement de base terminé.")
+    click.echo("Peuplement des produits et catégories terminé.")
+
+    # --- Création des pages de contenu ---
+    click.echo("Création des pages de contenu par défaut...")
+    about_us_page = PageContent.query.filter_by(page_name='about-us').first()
+    if not about_us_page:
+        about_us_page = PageContent(
+            page_name='about-us',
+            title='Qui sommes-nous ?',
+            subtitle='''L'histoire de notre ferme et de notre passion.''',
+            body='''<p>Bienvenue sur notre page ! Ici, vous pouvez écrire l'histoire de votre projet, vos valeurs, et ce qui rend votre ferme unique.</p>
+<p>Parlez de votre engagement envers la qualité, l'agriculture durable, et le bien-être animal. C'est l'endroit idéal pour créer un lien de confiance avec vos clients.</p>'''
+        )
+        db.session.add(about_us_page)
+    
+    # --- Création des pages FAQ, Témoignages et Partenaires ---
+    click.echo("Création des pages FAQ, Témoignages et Partenaires...")
+    faq_page = PageContent.query.filter_by(page_name='faq').first()
+    if not faq_page:
+        faq_page = PageContent(
+            page_name='faq',
+            title='Foire Aux Questions',
+            subtitle='Vos questions, nos réponses.',
+            body='''<p>Ici, vous trouverez les réponses aux questions les plus fréquemment posées.</p>
+<p>N\'hésitez pas à nous contacter si vous ne trouvez pas ce que vous cherchez.</p>'''
+        )
+        db.session.add(faq_page)
+
+    testimonials_page = PageContent.query.filter_by(page_name='testimonials').first()
+    if not testimonials_page:
+        testimonials_page = PageContent(
+            page_name='testimonials',
+            title='Témoignages',
+            subtitle='Ce que nos clients disent de nous.',
+            body='''<p>Découvrez les avis de nos clients satisfaits.</p>
+<p>Votre satisfaction est notre priorité !</p>'''
+        )
+        db.session.add(testimonials_page)
+
+    partners_page = PageContent.query.filter_by(page_name='partners').first()
+    if not partners_page:
+        partners_page = PageContent(
+            page_name='partners',
+            title='Nos Partenaires',
+            subtitle='Ensemble pour une agriculture durable.',
+            body='''<p>Nous sommes fiers de travailler avec des partenaires engagés.</p>
+<p>Découvrez ceux qui nous accompagnent dans notre démarche.</p>'''
+        )
+        db.session.add(partners_page)
+    
+    db.session.commit()
+    click.echo("Création des pages de contenu terminée.")
 
 @seed.command()
 @with_appcontext
